@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Broker in a Box — by RocketPro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
+<style>
+  :root{
+    --red:#E5401E; --red-press:#C5331A; --red-soft:#FCEDE8;
+    --ink:#111114; --ink2:#3D3D44; --muted:#7A7A83;
+    --line:#ECE9E5; --line2:#E2DED8; --mist:#F6F5F3; --ok:#1E8E5A; --warn:#B8841C;
+    --shadow:0 1px 2px rgba(17,17,20,.04), 0 8px 24px rgba(17,17,20,.06);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Inter',system-ui,sans-serif; background:#E8E6E2; color:var(--ink);
+    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px;}
+  #root{width:100%; display:flex; justify-content:center;}
+  .phone{width:390px; max-width:100%; aspect-ratio:390/844; max-height:92vh; background:var(--paper,#fff);
+    border-radius:46px; border:1px solid var(--line2);
+    box-shadow:0 2px 6px rgba(0,0,0,.08), 0 30px 80px rgba(0,0,0,.22);
+    overflow:hidden; position:relative; display:flex; flex-direction:column;}
+  .notch{position:absolute; top:11px; left:50%; transform:translateX(-50%); width:118px; height:28px; background:var(--ink); border-radius:16px; z-index:9;}
+  .statusbar{height:48px; flex:0 0 48px; padding:0 26px; display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:600; z-index:5;}
+  .screen{flex:1 1 auto; overflow-y:auto; overflow-x:hidden; position:relative;}
+  .screen::-webkit-scrollbar{width:0;}
+  .pad{padding:4px 20px 122px;}
+  .tabbar{flex:0 0 auto; position:absolute; left:0; right:0; bottom:0; height:84px; padding:8px 8px 26px;
+    background:rgba(255,255,255,.9); backdrop-filter:saturate(180%) blur(20px); border-top:1px solid var(--line);
+    display:flex; justify-content:space-around; z-index:12;}
+  .tab{background:none; border:0; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 4px; cursor:pointer; color:var(--muted); flex:1;}
+  .tab svg{width:22px; height:22px;}
+  .tab span{font-size:10.5px; font-weight:600;}
+  .tab.active{color:var(--red);}
+
+  .eyebrow{font-size:11px; font-weight:700; letter-spacing:1.3px; text-transform:uppercase; color:var(--red); margin:0;}
+  .h1{font-size:26px; line-height:1.09; font-weight:800; letter-spacing:-.6px; margin:6px 0 0;}
+  .h2{font-size:18px; font-weight:800; letter-spacing:-.3px; margin:0;}
+  .sub{font-size:13px; line-height:1.5; color:var(--muted); margin:8px 0 0;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow);}
+  .row{display:flex; align-items:center;}
+  .spacer{flex:1;}
+
+  .btn{appearance:none; border:0; cursor:pointer; font-family:inherit; font-weight:700; font-size:15px; border-radius:14px; padding:15px 18px; display:flex; align-items:center; justify-content:center; gap:9px; width:100%;}
+  .btn-primary{background:var(--red); color:#fff;} .btn-primary:active{background:var(--red-press);}
+  .btn-ghost{background:var(--mist); color:var(--ink);} .btn-ghost:active{background:var(--line);}
+  .btn-dark{background:var(--ink); color:#fff;}
+  .btn svg{width:18px; height:18px;}
+  .btn[disabled]{opacity:.45;}
+
+  .chip{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px;}
+  .chip-done{background:#E8F5EE; color:var(--ok);} .chip-now{background:var(--red-soft); color:var(--red);} .chip-next{background:var(--mist); color:var(--muted);}
+
+  .field{width:100%; border:1px solid var(--line2); border-radius:13px; padding:14px 14px; font-size:15px; font-family:inherit; background:#fff; color:var(--ink); outline:none;}
+  .field:focus{border-color:var(--red); box-shadow:0 0 0 3px var(--red-soft);}
+  .lbl{font-size:12px; font-weight:700; color:var(--ink2); margin:0 0 7px 2px; display:block;}
+
+  input[type=range]{-webkit-appearance:none; width:100%; height:5px; border-radius:4px; background:var(--line2); outline:none; margin:8px 0;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:22px; height:22px; border-radius:50%; background:var(--red); cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.25);}
+  input[type=range]::-moz-range-thumb{width:22px; height:22px; border:0; border-radius:50%; background:var(--red); cursor:pointer;}
+
+  .seg{display:flex; background:var(--mist); border-radius:12px; padding:4px; gap:4px;}
+  .seg button{flex:1; border:0; background:none; font-family:inherit; font-weight:700; font-size:13px; padding:9px; border-radius:9px; cursor:pointer; color:var(--muted);}
+  .seg button.on{background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.08);}
+
+  /* roadmap */
+  .stage{position:relative; padding:0 0 0 48px;}
+  .stage .line{position:absolute; left:17px; top:6px; bottom:-8px; width:3px; background:var(--line2); border-radius:2px;}
+  .stage:last-child .line{display:none;}
+  .stage.done .line{background:var(--red);}
+  .node{position:absolute; left:6px; top:2px; width:25px; height:25px; border-radius:50%; background:#fff; border:3px solid var(--line2); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--muted); z-index:2;}
+  .stage.done .node{background:var(--red); border-color:var(--red); color:#fff;}
+  .stage.current .node{border-color:var(--red); color:var(--red); box-shadow:0 0 0 4px var(--red-soft);}
+  .scard{background:#fff; border:1px solid var(--line); border-radius:15px; padding:13px 14px; margin-bottom:13px; box-shadow:var(--shadow); cursor:pointer;}
+  .scard.current{border-color:var(--red); box-shadow:0 0 0 1px var(--red), var(--shadow);}
+
+  .task{display:flex; gap:11px; align-items:flex-start; padding:9px 0; cursor:pointer;}
+  .check{flex:0 0 22px; width:22px; height:22px; border-radius:7px; border:2px solid var(--line2); display:flex; align-items:center; justify-content:center; margin-top:1px; color:#fff;}
+  .task.checked .check{background:var(--red); border-color:var(--red);}
+  .task .tl{font-size:13.5px; font-weight:600; line-height:1.35;}
+  .task.checked .tl{color:var(--muted); text-decoration:line-through;}
+  .task .td{font-size:12px; color:var(--muted); line-height:1.4; margin-top:2px;}
+
+  /* lists / rows */
+  .lrow{display:flex; align-items:center; gap:13px; padding:14px 16px; border-bottom:1px solid var(--line); cursor:pointer; text-decoration:none; color:inherit;}
+  .lrow:last-child{border-bottom:0;}
+  .lrow .ic{width:40px; height:40px; border-radius:11px; background:var(--mist); display:flex; align-items:center; justify-content:center; flex:0 0 40px; color:var(--ink2);}
+  .lrow .ic svg{width:19px; height:19px;}
+  .lrow b{font-size:14.5px; font-weight:700;}
+  .lrow small{font-size:12.5px; color:var(--muted); display:block; margin-top:1px;}
+
+  .stat{background:var(--mist); border-radius:14px; padding:14px;}
+  .stat .v{font-size:24px; font-weight:800; letter-spacing:-.6px;}
+  .stat .k{font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.3px;}
+
+  .backbtn{display:inline-flex; align-items:center; gap:6px; background:none; border:0; font-family:inherit; font-weight:700; font-size:14px; color:var(--ink2); cursor:pointer; padding:6px 0; margin-top:8px;}
+  .topbar{flex:0 0 auto; height:46px; padding:0 16px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--line); background:#fff; z-index:8;}
+  .tb-brand{background:none; border:0; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:8px; font-weight:800; font-size:14px; letter-spacing:-.3px; color:var(--ink); padding:0;}
+  .tb-brand .r{width:21px; height:21px; border-radius:6px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900;}
+  .tb-back{background:none; border:0; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-weight:700; font-size:14px; color:var(--ink2); padding:6px 0;}
+  .tb-back svg{width:19px; height:19px;}
+  .tb-out{background:var(--mist); border:0; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:12.5px; color:var(--ink2); padding:7px 12px; border-radius:20px;}
+  .tb-out:active{background:var(--line);}
+  .tb-out svg{width:16px; height:16px;}
+  .backbtn svg{width:18px; height:18px;}
+
+  /* vendor */
+  .vcats{display:flex; gap:7px; overflow-x:auto; padding:2px 0 4px; margin:14px 0 4px;}
+  .vcats::-webkit-scrollbar{height:0;}
+  .vcat{flex:0 0 auto; border:1px solid var(--line2); background:#fff; border-radius:20px; padding:7px 13px; font-size:12px; font-weight:700; color:var(--ink2); cursor:pointer; white-space:nowrap;}
+  .vcat.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .vcard{display:flex; gap:12px; align-items:flex-start; padding:14px; border:1px solid var(--line); border-radius:15px; margin-bottom:11px; background:#fff; box-shadow:var(--shadow); text-decoration:none; color:inherit;}
+  .vcard .logo{width:42px; height:42px; border-radius:11px; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex:0 0 42px;}
+  .vcard b{font-size:14.5px; font-weight:800; letter-spacing:-.2px;}
+  .vcard .cat{font-size:10.5px; font-weight:700; color:var(--red); text-transform:uppercase; letter-spacing:.4px;}
+  .vcard p{font-size:12.5px; color:var(--muted); line-height:1.4; margin:5px 0 0;}
+  .vcard .ext{flex:0 0 auto; color:var(--line2); align-self:center;}
+  .vcard .ext svg{width:18px; height:18px;}
+
+  /* pdm */
+  .pdm{background:linear-gradient(135deg,#1A1A1F 0%, #2A2A30 100%); border-radius:20px; padding:18px; color:#fff; position:relative; overflow:hidden;}
+  .pdm .glow{position:absolute; right:-40px; top:-40px; width:150px; height:150px; background:radial-gradient(circle, rgba(229,64,30,.5), transparent 70%);}
+  .av{width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--red),#F08A2E); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; flex:0 0 56px;}
+  .pa{background:rgba(255,255,255,.12); border:0; border-radius:12px; padding:11px 6px; color:#fff; display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; font-size:11px; font-weight:600; text-decoration:none;}
+  .pa:active{background:rgba(255,255,255,.22);}
+  .pa svg{width:17px; height:17px;}
+  .synced{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--ok); background:#E8F5EE; padding:5px 10px; border-radius:20px;}
+
+  .bm{display:inline-flex; align-items:center; gap:7px; font-weight:800; letter-spacing:-.3px; font-size:15px;}
+  .bm .r{width:22px; height:22px; border-radius:6px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900;}
+
+  .sheet-bg{position:absolute; inset:0; background:rgba(17,17,20,.42); z-index:20; display:flex; align-items:flex-end;}
+  .sheet{background:#fff; width:100%; border-radius:24px 24px 0 0; padding:6px 20px 28px; max-height:84%; overflow-y:auto; animation:up .26s cubic-bezier(.2,.8,.2,1) both;}
+  .sheet::-webkit-scrollbar{width:0;}
+  @keyframes up{from{transform:translateY(100%);} to{transform:none;}}
+  .grab{width:36px; height:5px; border-radius:3px; background:var(--line2); margin:8px auto 12px;}
+  .fade{animation:fade .35s ease both;}
+  @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion:reduce){.fade,.sheet{animation:none !important;}}
+
+  /* sign in */
+  .signin{flex:1; display:flex; flex-direction:column; padding:0 26px 30px; overflow-y:auto;}
+  .signin::-webkit-scrollbar{width:0;}
+  .logo-lg{width:60px; height:60px; border-radius:16px; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:900;}
+  .pwwrap{position:relative;}
+  .pweye{position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:0; color:var(--muted); cursor:pointer; padding:4px;}
+  .pweye svg{width:20px; height:20px;}
+  .dropzone{display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; padding:24px 18px; margin-top:16px; border:2px dashed var(--line2); border-radius:16px; cursor:pointer; background:var(--mist);}
+  .dropzone:active{background:var(--line);}
+  .dropzone b{font-size:14.5px; font-weight:800;}
+  .dropzone small{font-size:12px; color:var(--muted);}
+  .dz-ic{width:46px; height:46px; border-radius:13px; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center; margin-bottom:2px;}
+  .dz-ic svg{width:22px; height:22px;}
+  .autochip{display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:var(--red); background:var(--red-soft); padding:3px 7px; border-radius:12px; margin-left:8px;}
+  .sfmap{font-size:10.5px; font-weight:700; color:var(--muted); font-family:var(--mono,ui-monospace,monospace);}
+  .spin{width:16px; height:16px; flex:0 0 16px; border:2px solid var(--line2); border-top-color:var(--red); border-radius:50%; animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .stchip{display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:800; color:var(--ink); background:var(--mist); border:1px solid var(--line2); padding:6px 6px 6px 11px; border-radius:20px;}
+  .stchip button{background:none; border:0; padding:2px; display:flex; cursor:pointer; color:var(--muted); border-radius:50%;}
+  .stchip button:active{background:var(--line);}
+  .stchip button svg{width:14px; height:14px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState, useMemo, useEffect} = React;
+const COMP = {"nat":{"avgComp":2.105,"median":2.0,"n":3790},"state":{"AK":{"avgComp":2.5,"n":2.0,"avgUnits":2.8},"AL":{"avgComp":2.566,"n":25.0,"avgUnits":3.3},"AR":{"avgComp":2.045,"n":11.0,"avgUnits":4.8},"AZ":{"avgComp":2.162,"n":152.0,"avgUnits":7.6},"CA":{"avgComp":1.811,"n":986.0,"avgUnits":7.2},"CO":{"avgComp":1.89,"n":127.0,"avgUnits":3.8},"CT":{"avgComp":2.348,"n":34.0,"avgUnits":3.1},"DC":{"avgComp":2.25,"n":3.0,"avgUnits":3.0},"DE":{"avgComp":2.475,"n":4.0,"avgUnits":10.9},"FL":{"avgComp":2.438,"n":449.0,"avgUnits":3.7},"GA":{"avgComp":2.123,"n":133.0,"avgUnits":5.7},"HI":{"avgComp":1.904,"n":17.0,"avgUnits":4.4},"IA":{"avgComp":2.05,"n":5.0,"avgUnits":3.7},"ID":{"avgComp":1.983,"n":15.0,"avgUnits":6.7},"IL":{"avgComp":2.113,"n":93.0,"avgUnits":5.0},"IN":{"avgComp":2.165,"n":32.0,"avgUnits":5.0},"KS":{"avgComp":1.908,"n":19.0,"avgUnits":4.3},"KY":{"avgComp":2.285,"n":31.0,"avgUnits":5.4},"LA":{"avgComp":2.471,"n":39.0,"avgUnits":6.4},"MA":{"avgComp":1.877,"n":45.0,"avgUnits":4.2},"MD":{"avgComp":2.267,"n":76.0,"avgUnits":4.5},"ME":{"avgComp":2.167,"n":6.0,"avgUnits":2.7},"MI":{"avgComp":2.285,"n":132.0,"avgUnits":7.8},"MN":{"avgComp":2.247,"n":36.0,"avgUnits":4.2},"MO":{"avgComp":2.242,"n":43.0,"avgUnits":3.8},"MS":{"avgComp":2.417,"n":6.0,"avgUnits":2.6},"MT":{"avgComp":1.9,"n":5.0,"avgUnits":1.3},"Mi":{"avgComp":1.5,"n":1.0,"avgUnits":1.7},"NC":{"avgComp":2.022,"n":98.0,"avgUnits":6.0},"ND":{"avgComp":1.625,"n":2.0,"avgUnits":1.6},"NE":{"avgComp":2.116,"n":14.0,"avgUnits":3.1},"NH":{"avgComp":2.059,"n":8.0,"avgUnits":1.7},"NJ":{"avgComp":2.293,"n":92.0,"avgUnits":5.2},"NM":{"avgComp":1.958,"n":9.0,"avgUnits":2.2},"NV":{"avgComp":2.128,"n":39.0,"avgUnits":3.5},"NY":{"avgComp":2.32,"n":89.0,"avgUnits":5.1},"OH":{"avgComp":2.157,"n":55.0,"avgUnits":5.9},"OK":{"avgComp":2.317,"n":24.0,"avgUnits":3.8},"OR":{"avgComp":2.146,"n":44.0,"avgUnits":7.5},"PA":{"avgComp":2.369,"n":101.0,"avgUnits":4.9},"PR":{"avgComp":2.75,"n":1.0,"avgUnits":13.3},"RI":{"avgComp":1.964,"n":7.0,"avgUnits":1.6},"SC":{"avgComp":2.289,"n":42.0,"avgUnits":5.1},"SD":{"avgComp":2.25,"n":3.0,"avgUnits":1.7},"TN":{"avgComp":2.211,"n":42.0,"avgUnits":3.2},"TX":{"avgComp":2.2,"n":321.0,"avgUnits":3.8},"UT":{"avgComp":2.066,"n":83.0,"avgUnits":4.7},"VA":{"avgComp":2.089,"n":99.0,"avgUnits":3.9},"VT":{"avgComp":2.25,"n":1.0,"avgUnits":1.0},"WA":{"avgComp":1.852,"n":70.0,"avgUnits":3.7},"WI":{"avgComp":2.292,"n":12.0,"avgUnits":9.9},"WV":{"avgComp":2.125,"n":2.0,"avgUnits":2.2},"WY":{"avgComp":1.8,"n":5.0,"avgUnits":5.8}},"zip3":{"009":{"avgComp":2.75,"n":1.0,"avgUnits":13.3,"st":"PR"},"010":{"avgComp":1.75,"n":1.0,"avgUnits":1.0,"st":"MA"},"015":{"avgComp":2.417,"n":3.0,"avgUnits":2.5,"st":"MA"},"016":{"avgComp":2.125,"n":1.0,"avgUnits":3.3,"st":"MA"},"017":{"avgComp":1.542,"n":3.0,"avgUnits":7.9,"st":"MA"},"018":{"avgComp":1.875,"n":7.0,"avgUnits":6.0,"st":"MA"},"019":{"avgComp":2.333,"n":3.0,"avgUnits":3.7,"st":"MA"},"020":{"avgComp":1.667,"n":9.0,"avgUnits":3.4,"st":"MA"},"021":{"avgComp":2.0,"n":6.0,"avgUnits":4.1,"st":"MA"},"023":{"avgComp":1.75,"n":2.0,"avgUnits":1.3,"st":"MA"},"024":{"avgComp":1.786,"n":7.0,"avgUnits":4.7,"st":"MA"},"026":{"avgComp":1.925,"n":2.0,"avgUnits":3.3,"st":"MA"},"027":{"avgComp":1.75,"n":1.0,"avgUnits":1.3,"st":"MA"},"028":{"avgComp":2.5,"n":2.0,"avgUnits":1.5,"st":"RI"},"029":{"avgComp":1.75,"n":5.0,"avgUnits":1.7,"st":"RI"},"030":{"avgComp":2.031,"n":4.0,"avgUnits":1.6,"st":"NH"},"032":{"avgComp":2.0,"n":1.0,"avgUnits":1.7,"st":"NH"},"037":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"NH"},"038":{"avgComp":2.175,"n":2.0,"avgUnits":2.2,"st":"NH"},"040":{"avgComp":2.5,"n":3.0,"avgUnits":1.5,"st":"ME"},"041":{"avgComp":1.25,"n":1.0,"avgUnits":1.0,"st":"ME"},"044":{"avgComp":2.5,"n":1.0,"avgUnits":8.7,"st":"ME"},"046":{"avgComp":1.75,"n":1.0,"avgUnits":2.0,"st":"ME"},"054":{"avgComp":2.25,"n":1.0,"avgUnits":1.0,"st":"VT"},"060":{"avgComp":2.556,"n":9.0,"avgUnits":2.8,"st":"CT"},"061":{"avgComp":2.35,"n":2.0,"avgUnits":2.0,"st":"CT"},"064":{"avgComp":2.375,"n":6.0,"avgUnits":4.1,"st":"CT"},"065":{"avgComp":2.167,"n":3.0,"avgUnits":2.5,"st":"CT"},"066":{"avgComp":2.5,"n":1.0,"avgUnits":2.0,"st":"CT"},"067":{"avgComp":2.5,"n":1.0,"avgUnits":2.7,"st":"CT"},"068":{"avgComp":2.188,"n":10.0,"avgUnits":1.6,"st":"CT"},"069":{"avgComp":2.25,"n":2.0,"avgUnits":11.3,"st":"CT"},"070":{"avgComp":2.274,"n":19.0,"avgUnits":8.6,"st":"NJ"},"071":{"avgComp":2.25,"n":1.0,"avgUnits":4.0,"st":"NJ"},"073":{"avgComp":2.0,"n":1.0,"avgUnits":3.3,"st":"NJ"},"074":{"avgComp":2.594,"n":8.0,"avgUnits":3.9,"st":"NJ"},"075":{"avgComp":2.0,"n":1.0,"avgUnits":9.0,"st":"NJ"},"076":{"avgComp":2.205,"n":11.0,"avgUnits":5.4,"st":"NJ"},"077":{"avgComp":2.25,"n":11.0,"avgUnits":3.8,"st":"NJ"},"078":{"avgComp":2.75,"n":2.0,"avgUnits":2.8,"st":"NJ"},"079":{"avgComp":2.167,"n":3.0,"avgUnits":9.8,"st":"NJ"},"080":{"avgComp":2.554,"n":14.0,"avgUnits":4.4,"st":"NJ"},"081":{"avgComp":2.75,"n":1.0,"avgUnits":1.0,"st":"NJ"},"085":{"avgComp":1.562,"n":2.0,"avgUnits":3.2,"st":"NJ"},"086":{"avgComp":2.75,"n":1.0,"avgUnits":1.7,"st":"NJ"},"087":{"avgComp":2.331,"n":4.0,"avgUnits":1.8,"st":"NJ"},"088":{"avgComp":2.043,"n":12.0,"avgUnits":4.6,"st":"NJ"},"089":{"avgComp":1.5,"n":1.0,"avgUnits":1.0,"st":"NJ"},"100":{"avgComp":1.917,"n":3.0,"avgUnits":2.8,"st":"NY"},"103":{"avgComp":2.188,"n":4.0,"avgUnits":3.1,"st":"NY"},"104":{"avgComp":2.5,"n":1.0,"avgUnits":3.3,"st":"NY"},"105":{"avgComp":2.312,"n":4.0,"avgUnits":7.2,"st":"NY"},"106":{"avgComp":2.375,"n":2.0,"avgUnits":2.2,"st":"NY"},"108":{"avgComp":1.75,"n":1.0,"avgUnits":1.7,"st":"NY"},"109":{"avgComp":2.562,"n":12.0,"avgUnits":6.7,"st":"NY"},"110":{"avgComp":2.292,"n":6.0,"avgUnits":10.2,"st":"NY"},"111":{"avgComp":1.917,"n":3.0,"avgUnits":2.0,"st":"NY"},"112":{"avgComp":2.208,"n":9.0,"avgUnits":6.9,"st":"NY"},"113":{"avgComp":2.25,"n":7.0,"avgUnits":3.6,"st":"NY"},"114":{"avgComp":2.031,"n":4.0,"avgUnits":3.2,"st":"NY"},"115":{"avgComp":2.639,"n":9.0,"avgUnits":2.7,"st":"NY"},"117":{"avgComp":2.333,"n":15.0,"avgUnits":2.5,"st":"NY"},"118":{"avgComp":2.75,"n":1.0,"avgUnits":43.7,"st":"NY"},"120":{"avgComp":1.75,"n":1.0,"avgUnits":7.3,"st":"NY"},"121":{"avgComp":2.75,"n":2.0,"avgUnits":11.2,"st":"NY"},"129":{"avgComp":1.75,"n":1.0,"avgUnits":2.3,"st":"NY"},"142":{"avgComp":2.375,"n":2.0,"avgUnits":2.5,"st":"NY"},"145":{"avgComp":2.5,"n":1.0,"avgUnits":2.7,"st":"NY"},"149":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"NY"},"150":{"avgComp":2.75,"n":3.0,"avgUnits":3.0,"st":"PA"},"151":{"avgComp":2.25,"n":1.0,"avgUnits":1.3,"st":"PA"},"152":{"avgComp":2.208,"n":6.0,"avgUnits":4.7,"st":"PA"},"153":{"avgComp":2.75,"n":1.0,"avgUnits":2.7,"st":"PA"},"156":{"avgComp":2.417,"n":3.0,"avgUnits":7.6,"st":"PA"},"160":{"avgComp":2.281,"n":4.0,"avgUnits":3.8,"st":"PA"},"165":{"avgComp":2.5,"n":1.0,"avgUnits":1.0,"st":"PA"},"168":{"avgComp":2.75,"n":1.0,"avgUnits":2.3,"st":"PA"},"170":{"avgComp":2.333,"n":3.0,"avgUnits":3.8,"st":"PA"},"171":{"avgComp":2.25,"n":1.0,"avgUnits":1.7,"st":"PA"},"175":{"avgComp":2.0,"n":1.0,"avgUnits":11.3,"st":"PA"},"176":{"avgComp":2.417,"n":3.0,"avgUnits":3.1,"st":"PA"},"180":{"avgComp":2.083,"n":3.0,"avgUnits":1.2,"st":"PA"},"181":{"avgComp":2.75,"n":1.0,"avgUnits":17.0,"st":"PA"},"184":{"avgComp":2.75,"n":1.0,"avgUnits":1.0,"st":"PA"},"185":{"avgComp":2.5,"n":1.0,"avgUnits":15.7,"st":"PA"},"189":{"avgComp":2.327,"n":13.0,"avgUnits":7.6,"st":"PA"},"190":{"avgComp":2.391,"n":24.0,"avgUnits":4.9,"st":"PA"},"191":{"avgComp":2.625,"n":6.0,"avgUnits":3.5,"st":"PA"},"193":{"avgComp":2.193,"n":11.0,"avgUnits":4.0,"st":"PA"},"194":{"avgComp":2.438,"n":10.0,"avgUnits":4.9,"st":"PA"},"195":{"avgComp":2.0,"n":1.0,"avgUnits":9.3,"st":"PA"},"196":{"avgComp":2.25,"n":2.0,"avgUnits":2.4,"st":"PA"},"197":{"avgComp":2.75,"n":1.0,"avgUnits":4.3,"st":"DE"},"199":{"avgComp":2.383,"n":3.0,"avgUnits":13.1,"st":"DE"},"200":{"avgComp":2.25,"n":3.0,"avgUnits":3.0,"st":"DC"},"201":{"avgComp":1.661,"n":14.0,"avgUnits":3.2,"st":"VA"},"206":{"avgComp":1.812,"n":2.0,"avgUnits":7.2,"st":"MD"},"207":{"avgComp":2.266,"n":8.0,"avgUnits":2.3,"st":"MD"},"208":{"avgComp":2.227,"n":27.0,"avgUnits":4.4,"st":"MD"},"209":{"avgComp":2.5,"n":4.0,"avgUnits":1.9,"st":"MD"},"210":{"avgComp":2.245,"n":10.0,"avgUnits":3.8,"st":"MD"},"211":{"avgComp":2.359,"n":8.0,"avgUnits":5.3,"st":"MD"},"212":{"avgComp":2.417,"n":9.0,"avgUnits":7.6,"st":"MD"},"214":{"avgComp":2.5,"n":1.0,"avgUnits":6.0,"st":"MD"},"216":{"avgComp":2.75,"n":1.0,"avgUnits":2.0,"st":"MD"},"217":{"avgComp":2.021,"n":6.0,"avgUnits":4.6,"st":"MD"},"220":{"avgComp":2.297,"n":16.0,"avgUnits":4.4,"st":"VA"},"221":{"avgComp":2.039,"n":14.0,"avgUnits":4.7,"st":"VA"},"223":{"avgComp":1.938,"n":4.0,"avgUnits":3.2,"st":"VA"},"224":{"avgComp":1.875,"n":2.0,"avgUnits":3.5,"st":"VA"},"225":{"avgComp":2.062,"n":2.0,"avgUnits":1.2,"st":"VA"},"226":{"avgComp":2.25,"n":2.0,"avgUnits":3.5,"st":"VA"},"229":{"avgComp":2.188,"n":4.0,"avgUnits":2.2,"st":"VA"},"230":{"avgComp":1.0,"n":1.0,"avgUnits":4.0,"st":"VA"},"231":{"avgComp":1.875,"n":4.0,"avgUnits":2.5,"st":"VA"},"232":{"avgComp":2.297,"n":8.0,"avgUnits":4.1,"st":"VA"},"233":{"avgComp":2.167,"n":3.0,"avgUnits":2.1,"st":"VA"},"234":{"avgComp":2.4,"n":10.0,"avgUnits":4.3,"st":"VA"},"236":{"avgComp":2.5,"n":1.0,"avgUnits":1.3,"st":"VA"},"238":{"avgComp":2.0,"n":1.0,"avgUnits":2.3,"st":"VA"},"239":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"VA"},"240":{"avgComp":1.875,"n":2.0,"avgUnits":2.0,"st":"VA"},"242":{"avgComp":2.25,"n":1.0,"avgUnits":3.7,"st":"VA"},"244":{"avgComp":1.75,"n":1.0,"avgUnits":3.3,"st":"VA"},"245":{"avgComp":2.321,"n":7.0,"avgUnits":7.3,"st":"VA"},"246":{"avgComp":1.5,"n":1.0,"avgUnits":2.3,"st":"VA"},"254":{"avgComp":2.125,"n":2.0,"avgUnits":2.2,"st":"WV"},"272":{"avgComp":2.0,"n":2.0,"avgUnits":2.4,"st":"NC"},"273":{"avgComp":2.5,"n":1.0,"avgUnits":16.7,"st":"NC"},"274":{"avgComp":2.438,"n":2.0,"avgUnits":5.4,"st":"NC"},"275":{"avgComp":1.688,"n":16.0,"avgUnits":5.5,"st":"NC"},"276":{"avgComp":1.828,"n":8.0,"avgUnits":5.4,"st":"NC"},"277":{"avgComp":2.2,"n":5.0,"avgUnits":3.6,"st":"NC"},"278":{"avgComp":2.875,"n":1.0,"avgUnits":13.0,"st":"NC"},"280":{"avgComp":2.125,"n":4.0,"avgUnits":7.2,"st":"NC"},"281":{"avgComp":1.969,"n":8.0,"avgUnits":5.3,"st":"NC"},"282":{"avgComp":2.091,"n":32.0,"avgUnits":7.5,"st":"NC"},"283":{"avgComp":2.146,"n":6.0,"avgUnits":5.1,"st":"NC"},"284":{"avgComp":2.1,"n":5.0,"avgUnits":5.9,"st":"NC"},"285":{"avgComp":1.75,"n":1.0,"avgUnits":2.7,"st":"NC"},"286":{"avgComp":2.167,"n":3.0,"avgUnits":2.7,"st":"NC"},"287":{"avgComp":2.125,"n":2.0,"avgUnits":4.4,"st":"NC"},"288":{"avgComp":2.0,"n":1.0,"avgUnits":2.7,"st":"NC"},"289":{"avgComp":2.25,"n":1.0,"avgUnits":1.7,"st":"NC"},"291":{"avgComp":2.75,"n":1.0,"avgUnits":5.3,"st":"SC"},"292":{"avgComp":2.375,"n":4.0,"avgUnits":5.7,"st":"SC"},"293":{"avgComp":2.25,"n":1.0,"avgUnits":4.3,"st":"SC"},"294":{"avgComp":2.465,"n":11.0,"avgUnits":4.6,"st":"SC"},"295":{"avgComp":1.75,"n":2.0,"avgUnits":2.2,"st":"SC"},"296":{"avgComp":2.281,"n":12.0,"avgUnits":5.1,"st":"SC"},"297":{"avgComp":2.072,"n":7.0,"avgUnits":5.4,"st":"SC"},"298":{"avgComp":2.333,"n":3.0,"avgUnits":8.6,"st":"SC"},"299":{"avgComp":2.25,"n":2.0,"avgUnits":2.8,"st":"SC"},"300":{"avgComp":2.058,"n":58.0,"avgUnits":7.2,"st":"GA"},"301":{"avgComp":2.141,"n":8.0,"avgUnits":4.8,"st":"GA"},"302":{"avgComp":2.417,"n":3.0,"avgUnits":2.2,"st":"GA"},"303":{"avgComp":2.382,"n":18.0,"avgUnits":3.7,"st":"GA"},"304":{"avgComp":1.917,"n":3.0,"avgUnits":3.2,"st":"GA"},"305":{"avgComp":2.203,"n":8.0,"avgUnits":2.8,"st":"GA"},"306":{"avgComp":1.938,"n":4.0,"avgUnits":2.2,"st":"GA"},"309":{"avgComp":2.75,"n":1.0,"avgUnits":4.0,"st":"GA"},"310":{"avgComp":2.0,"n":3.0,"avgUnits":2.7,"st":"GA"},"312":{"avgComp":2.125,"n":1.0,"avgUnits":7.3,"st":"GA"},"313":{"avgComp":1.875,"n":4.0,"avgUnits":6.0,"st":"GA"},"314":{"avgComp":2.125,"n":2.0,"avgUnits":3.0,"st":"GA"},"315":{"avgComp":2.184,"n":8.0,"avgUnits":12.6,"st":"GA"},"316":{"avgComp":2.25,"n":1.0,"avgUnits":4.7,"st":"GA"},"317":{"avgComp":2.0,"n":6.0,"avgUnits":2.7,"st":"GA"},"318":{"avgComp":1.875,"n":2.0,"avgUnits":2.4,"st":"GA"},"319":{"avgComp":1.75,"n":1.0,"avgUnits":1.0,"st":"GA"},"320":{"avgComp":2.341,"n":14.0,"avgUnits":4.7,"st":"FL"},"321":{"avgComp":2.375,"n":4.0,"avgUnits":5.6,"st":"FL"},"322":{"avgComp":2.211,"n":14.0,"avgUnits":3.7,"st":"FL"},"323":{"avgComp":1.625,"n":2.0,"avgUnits":1.3,"st":"FL"},"324":{"avgComp":2.375,"n":4.0,"avgUnits":5.0,"st":"FL"},"325":{"avgComp":2.281,"n":8.0,"avgUnits":2.6,"st":"FL"},"327":{"avgComp":2.317,"n":28.0,"avgUnits":3.6,"st":"FL"},"328":{"avgComp":2.457,"n":32.0,"avgUnits":3.8,"st":"FL"},"329":{"avgComp":2.268,"n":7.0,"avgUnits":3.7,"st":"FL"},"330":{"avgComp":2.484,"n":39.0,"avgUnits":2.6,"st":"FL"},"331":{"avgComp":2.563,"n":110.0,"avgUnits":3.6,"st":"FL"},"333":{"avgComp":2.523,"n":32.0,"avgUnits":3.9,"st":"FL"},"334":{"avgComp":2.43,"n":46.0,"avgUnits":4.3,"st":"FL"},"335":{"avgComp":2.364,"n":11.0,"avgUnits":2.9,"st":"FL"},"336":{"avgComp":2.534,"n":22.0,"avgUnits":5.4,"st":"FL"},"337":{"avgComp":2.346,"n":14.0,"avgUnits":3.1,"st":"FL"},"338":{"avgComp":2.143,"n":7.0,"avgUnits":3.0,"st":"FL"},"339":{"avgComp":2.295,"n":11.0,"avgUnits":4.3,"st":"FL"},"341":{"avgComp":2.435,"n":10.0,"avgUnits":4.5,"st":"FL"},"342":{"avgComp":2.142,"n":15.0,"avgUnits":3.9,"st":"FL"},"344":{"avgComp":2.375,"n":2.0,"avgUnits":2.2,"st":"FL"},"346":{"avgComp":2.688,"n":4.0,"avgUnits":2.2,"st":"FL"},"347":{"avgComp":2.406,"n":8.0,"avgUnits":1.6,"st":"FL"},"349":{"avgComp":2.708,"n":6.0,"avgUnits":2.8,"st":"FL"},"350":{"avgComp":2.75,"n":1.0,"avgUnits":6.0,"st":"AL"},"352":{"avgComp":2.594,"n":8.0,"avgUnits":2.8,"st":"AL"},"354":{"avgComp":2.65,"n":1.0,"avgUnits":4.0,"st":"AL"},"356":{"avgComp":2.75,"n":2.0,"avgUnits":3.2,"st":"AL"},"357":{"avgComp":2.0,"n":1.0,"avgUnits":4.3,"st":"AL"},"358":{"avgComp":2.75,"n":3.0,"avgUnits":1.8,"st":"AL"},"359":{"avgComp":2.75,"n":1.0,"avgUnits":1.7,"st":"AL"},"360":{"avgComp":2.5,"n":1.0,"avgUnits":8.0,"st":"AL"},"361":{"avgComp":1.0,"n":1.0,"avgUnits":1.3,"st":"AL"},"365":{"avgComp":2.625,"n":2.0,"avgUnits":2.4,"st":"AL"},"366":{"avgComp":2.75,"n":3.0,"avgUnits":4.0,"st":"AL"},"368":{"avgComp":2.5,"n":1.0,"avgUnits":6.0,"st":"AL"},"370":{"avgComp":2.159,"n":11.0,"avgUnits":3.1,"st":"TN"},"371":{"avgComp":2.104,"n":6.0,"avgUnits":2.8,"st":"TN"},"372":{"avgComp":2.312,"n":4.0,"avgUnits":2.4,"st":"TN"},"373":{"avgComp":2.125,"n":4.0,"avgUnits":4.9,"st":"TN"},"376":{"avgComp":1.5,"n":1.0,"avgUnits":2.7,"st":"TN"},"377":{"avgComp":2.75,"n":1.0,"avgUnits":1.3,"st":"TN"},"378":{"avgComp":2.0,"n":1.0,"avgUnits":4.7,"st":"TN"},"379":{"avgComp":2.4,"n":10.0,"avgUnits":3.4,"st":"TN"},"381":{"avgComp":2.5,"n":1.0,"avgUnits":2.0,"st":"TN"},"383":{"avgComp":2.5,"n":1.0,"avgUnits":1.3,"st":"TN"},"384":{"avgComp":1.75,"n":2.0,"avgUnits":4.6,"st":"TN"},"386":{"avgComp":2.625,"n":2.0,"avgUnits":1.4,"st":"MS"},"392":{"avgComp":2.0,"n":1.0,"avgUnits":1.7,"st":"MS"},"394":{"avgComp":2.75,"n":1.0,"avgUnits":6.3,"st":"MS"},"396":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"MS"},"397":{"avgComp":2.5,"n":1.0,"avgUnits":3.7,"st":"MS"},"400":{"avgComp":2.5,"n":2.0,"avgUnits":1.5,"st":"KY"},"402":{"avgComp":2.287,"n":17.0,"avgUnits":7.2,"st":"KY"},"405":{"avgComp":2.042,"n":3.0,"avgUnits":2.2,"st":"KY"},"407":{"avgComp":2.75,"n":1.0,"avgUnits":7.0,"st":"KY"},"410":{"avgComp":2.167,"n":3.0,"avgUnits":3.3,"st":"KY"},"420":{"avgComp":2.75,"n":1.0,"avgUnits":1.3,"st":"KY"},"421":{"avgComp":2.5,"n":1.0,"avgUnits":3.0,"st":"KY"},"423":{"avgComp":2.038,"n":2.0,"avgUnits":3.2,"st":"KY"},"427":{"avgComp":2.25,"n":1.0,"avgUnits":7.3,"st":"KY"},"430":{"avgComp":2.156,"n":8.0,"avgUnits":4.3,"st":"OH"},"431":{"avgComp":1.75,"n":1.0,"avgUnits":1.7,"st":"OH"},"432":{"avgComp":2.25,"n":5.0,"avgUnits":9.5,"st":"OH"},"434":{"avgComp":1.75,"n":1.0,"avgUnits":6.3,"st":"OH"},"435":{"avgComp":2.5,"n":1.0,"avgUnits":19.0,"st":"OH"},"436":{"avgComp":2.5,"n":1.0,"avgUnits":4.7,"st":"OH"},"437":{"avgComp":1.5,"n":1.0,"avgUnits":1.3,"st":"OH"},"439":{"avgComp":2.0,"n":1.0,"avgUnits":2.3,"st":"OH"},"440":{"avgComp":1.833,"n":3.0,"avgUnits":4.0,"st":"OH"},"441":{"avgComp":2.291,"n":6.0,"avgUnits":9.7,"st":"OH"},"442":{"avgComp":2.429,"n":7.0,"avgUnits":1.6,"st":"OH"},"443":{"avgComp":2.188,"n":2.0,"avgUnits":3.8,"st":"OH"},"445":{"avgComp":2.5,"n":1.0,"avgUnits":3.3,"st":"OH"},"447":{"avgComp":2.25,"n":1.0,"avgUnits":14.7,"st":"OH"},"449":{"avgComp":2.5,"n":1.0,"avgUnits":3.0,"st":"OH"},"450":{"avgComp":1.55,"n":5.0,"avgUnits":6.1,"st":"OH"},"452":{"avgComp":2.062,"n":2.0,"avgUnits":2.0,"st":"OH"},"453":{"avgComp":2.75,"n":1.0,"avgUnits":34.7,"st":"OH"},"454":{"avgComp":2.354,"n":6.0,"avgUnits":3.8,"st":"OH"},"456":{"avgComp":1.5,"n":1.0,"avgUnits":2.0,"st":"OH"},"460":{"avgComp":1.929,"n":7.0,"avgUnits":6.6,"st":"IN"},"461":{"avgComp":2.188,"n":4.0,"avgUnits":2.5,"st":"IN"},"462":{"avgComp":2.167,"n":6.0,"avgUnits":8.4,"st":"IN"},"463":{"avgComp":2.562,"n":2.0,"avgUnits":3.0,"st":"IN"},"466":{"avgComp":1.9,"n":1.0,"avgUnits":4.0,"st":"IN"},"467":{"avgComp":1.75,"n":1.0,"avgUnits":4.0,"st":"IN"},"468":{"avgComp":2.75,"n":1.0,"avgUnits":3.7,"st":"IN"},"471":{"avgComp":2.464,"n":7.0,"avgUnits":3.6,"st":"IN"},"473":{"avgComp":1.5,"n":1.0,"avgUnits":1.3,"st":"IN"},"474":{"avgComp":1.875,"n":2.0,"avgUnits":3.8,"st":"IN"},"480":{"avgComp":2.326,"n":44.0,"avgUnits":10.9,"st":"MI"},"481":{"avgComp":2.289,"n":32.0,"avgUnits":5.8,"st":"MI"},"482":{"avgComp":2.125,"n":7.0,"avgUnits":10.7,"st":"MI"},"483":{"avgComp":2.192,"n":36.0,"avgUnits":6.4,"st":"MI"},"484":{"avgComp":2.531,"n":4.0,"avgUnits":3.3,"st":"MI"},"488":{"avgComp":2.281,"n":4.0,"avgUnits":6.5,"st":"MI"},"490":{"avgComp":2.0,"n":1.0,"avgUnits":12.0,"st":"MI"},"494":{"avgComp":2.5,"n":1.0,"avgUnits":2.3,"st":"MI"},"495":{"avgComp":2.5,"n":4.0,"avgUnits":2.8,"st":"MI"},"502":{"avgComp":2.0,"n":1.0,"avgUnits":4.0,"st":"IA"},"503":{"avgComp":2.083,"n":3.0,"avgUnits":4.4,"st":"IA"},"524":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"IA"},"530":{"avgComp":2.562,"n":4.0,"avgUnits":7.7,"st":"WI"},"532":{"avgComp":2.375,"n":2.0,"avgUnits":1.0,"st":"WI"},"535":{"avgComp":1.75,"n":1.0,"avgUnits":13.0,"st":"WI"},"537":{"avgComp":2.75,"n":1.0,"avgUnits":37.7,"st":"WI"},"543":{"avgComp":1.25,"n":1.0,"avgUnits":6.3,"st":"WI"},"544":{"avgComp":2.75,"n":1.0,"avgUnits":1.0,"st":"WI"},"547":{"avgComp":2.75,"n":1.0,"avgUnits":26.7,"st":"WI"},"549":{"avgComp":1.25,"n":1.0,"avgUnits":1.7,"st":"WI"},"550":{"avgComp":1.875,"n":4.0,"avgUnits":2.2,"st":"MN"},"551":{"avgComp":2.5,"n":6.0,"avgUnits":5.0,"st":"MN"},"553":{"avgComp":2.312,"n":10.0,"avgUnits":2.2,"st":"MN"},"554":{"avgComp":2.15,"n":10.0,"avgUnits":7.0,"st":"MN"},"560":{"avgComp":2.375,"n":2.0,"avgUnits":1.8,"st":"MN"},"563":{"avgComp":2.375,"n":2.0,"avgUnits":4.4,"st":"MN"},"565":{"avgComp":2.125,"n":2.0,"avgUnits":3.3,"st":"MN"},"570":{"avgComp":2.0,"n":1.0,"avgUnits":1.3,"st":"SD"},"571":{"avgComp":2.5,"n":1.0,"avgUnits":2.7,"st":"SD"},"577":{"avgComp":2.25,"n":1.0,"avgUnits":1.0,"st":"SD"},"584":{"avgComp":1.5,"n":1.0,"avgUnits":1.3,"st":"ND"},"585":{"avgComp":1.75,"n":1.0,"avgUnits":2.0,"st":"ND"},"590":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"MT"},"594":{"avgComp":1.0,"n":1.0,"avgUnits":1.0,"st":"MT"},"596":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"MT"},"597":{"avgComp":2.5,"n":1.0,"avgUnits":2.0,"st":"MT"},"598":{"avgComp":2.0,"n":1.0,"avgUnits":1.7,"st":"MT"},"600":{"avgComp":2.221,"n":30.0,"avgUnits":4.2,"st":"IL"},"601":{"avgComp":2.108,"n":22.0,"avgUnits":6.2,"st":"IL"},"604":{"avgComp":2.406,"n":8.0,"avgUnits":5.4,"st":"IL"},"605":{"avgComp":1.767,"n":15.0,"avgUnits":5.7,"st":"IL"},"606":{"avgComp":2.125,"n":8.0,"avgUnits":4.7,"st":"IL"},"607":{"avgComp":2.417,"n":3.0,"avgUnits":6.2,"st":"IL"},"609":{"avgComp":2.5,"n":1.0,"avgUnits":1.3,"st":"IL"},"612":{"avgComp":1.875,"n":2.0,"avgUnits":1.5,"st":"IL"},"613":{"avgComp":1.625,"n":2.0,"avgUnits":1.7,"st":"IL"},"624":{"avgComp":2.0,"n":1.0,"avgUnits":5.3,"st":"IL"},"625":{"avgComp":2.0,"n":1.0,"avgUnits":1.3,"st":"IL"},"630":{"avgComp":2.379,"n":6.0,"avgUnits":5.2,"st":"MO"},"631":{"avgComp":2.288,"n":10.0,"avgUnits":3.5,"st":"MO"},"633":{"avgComp":2.188,"n":4.0,"avgUnits":3.4,"st":"MO"},"638":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"MO"},"639":{"avgComp":1.5,"n":1.0,"avgUnits":5.3,"st":"MO"},"640":{"avgComp":2.357,"n":7.0,"avgUnits":2.8,"st":"MO"},"641":{"avgComp":2.25,"n":6.0,"avgUnits":5.3,"st":"MO"},"644":{"avgComp":1.25,"n":1.0,"avgUnits":5.0,"st":"MO"},"652":{"avgComp":2.0,"n":1.0,"avgUnits":5.3,"st":"MO"},"655":{"avgComp":1.5,"n":1.0,"avgUnits":1.0,"st":"MO"},"656":{"avgComp":2.0,"n":1.0,"avgUnits":6.3,"st":"MO"},"657":{"avgComp":2.625,"n":2.0,"avgUnits":2.7,"st":"MO"},"658":{"avgComp":2.5,"n":2.0,"avgUnits":2.2,"st":"MO"},"660":{"avgComp":1.688,"n":4.0,"avgUnits":2.8,"st":"KS"},"662":{"avgComp":2.075,"n":10.0,"avgUnits":5.7,"st":"KS"},"670":{"avgComp":2.0,"n":1.0,"avgUnits":2.0,"st":"KS"},"671":{"avgComp":2.0,"n":1.0,"avgUnits":7.7,"st":"KS"},"672":{"avgComp":1.583,"n":3.0,"avgUnits":1.4,"st":"KS"},"680":{"avgComp":1.875,"n":4.0,"avgUnits":2.5,"st":"NE"},"681":{"avgComp":2.264,"n":9.0,"avgUnits":3.5,"st":"NE"},"685":{"avgComp":1.75,"n":1.0,"avgUnits":1.7,"st":"NE"},"700":{"avgComp":2.536,"n":7.0,"avgUnits":3.7,"st":"LA"},"701":{"avgComp":2.775,"n":5.0,"avgUnits":22.3,"st":"LA"},"703":{"avgComp":1.625,"n":2.0,"avgUnits":2.0,"st":"LA"},"704":{"avgComp":2.75,"n":2.0,"avgUnits":3.5,"st":"LA"},"705":{"avgComp":2.542,"n":6.0,"avgUnits":8.8,"st":"LA"},"706":{"avgComp":2.125,"n":2.0,"avgUnits":1.2,"st":"LA"},"707":{"avgComp":2.75,"n":1.0,"avgUnits":7.3,"st":"LA"},"708":{"avgComp":2.643,"n":7.0,"avgUnits":3.0,"st":"LA"},"710":{"avgComp":2.083,"n":3.0,"avgUnits":3.8,"st":"LA"},"711":{"avgComp":2.333,"n":3.0,"avgUnits":1.9,"st":"LA"},"714":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"LA"},"717":{"avgComp":1.0,"n":1.0,"avgUnits":1.0,"st":"AR"},"720":{"avgComp":2.375,"n":2.0,"avgUnits":2.4,"st":"AR"},"722":{"avgComp":2.0,"n":1.0,"avgUnits":1.3,"st":"AR"},"724":{"avgComp":2.583,"n":3.0,"avgUnits":2.0,"st":"AR"},"725":{"avgComp":1.5,"n":1.0,"avgUnits":3.7,"st":"AR"},"726":{"avgComp":2.0,"n":1.0,"avgUnits":31.3,"st":"AR"},"727":{"avgComp":1.75,"n":2.0,"avgUnits":2.2,"st":"AR"},"730":{"avgComp":2.375,"n":3.0,"avgUnits":2.9,"st":"OK"},"731":{"avgComp":2.335,"n":10.0,"avgUnits":4.1,"st":"OK"},"736":{"avgComp":2.375,"n":1.0,"avgUnits":3.3,"st":"OK"},"740":{"avgComp":2.5,"n":1.0,"avgUnits":6.3,"st":"OK"},"741":{"avgComp":2.55,"n":5.0,"avgUnits":2.1,"st":"OK"},"743":{"avgComp":2.75,"n":1.0,"avgUnits":15.3,"st":"OK"},"744":{"avgComp":2.25,"n":1.0,"avgUnits":2.7,"st":"OK"},"748":{"avgComp":1.5,"n":1.0,"avgUnits":2.0,"st":"OK"},"749":{"avgComp":1.0,"n":1.0,"avgUnits":1.0,"st":"OK"},"750":{"avgComp":1.964,"n":72.0,"avgUnits":2.9,"st":"TX"},"751":{"avgComp":2.483,"n":6.0,"avgUnits":1.8,"st":"TX"},"752":{"avgComp":2.105,"n":19.0,"avgUnits":6.4,"st":"TX"},"756":{"avgComp":2.062,"n":4.0,"avgUnits":2.9,"st":"TX"},"757":{"avgComp":2.25,"n":5.0,"avgUnits":6.9,"st":"TX"},"759":{"avgComp":2.0,"n":1.0,"avgUnits":1.7,"st":"TX"},"760":{"avgComp":2.306,"n":20.0,"avgUnits":4.7,"st":"TX"},"761":{"avgComp":2.364,"n":11.0,"avgUnits":2.5,"st":"TX"},"762":{"avgComp":2.0,"n":5.0,"avgUnits":2.0,"st":"TX"},"763":{"avgComp":2.5,"n":1.0,"avgUnits":1.0,"st":"TX"},"764":{"avgComp":1.5,"n":1.0,"avgUnits":2.7,"st":"TX"},"769":{"avgComp":2.0,"n":2.0,"avgUnits":1.5,"st":"TX"},"770":{"avgComp":2.328,"n":48.0,"avgUnits":4.5,"st":"TX"},"773":{"avgComp":2.357,"n":14.0,"avgUnits":3.7,"st":"TX"},"774":{"avgComp":2.14,"n":25.0,"avgUnits":3.2,"st":"TX"},"775":{"avgComp":2.219,"n":9.0,"avgUnits":3.2,"st":"TX"},"778":{"avgComp":2.75,"n":3.0,"avgUnits":3.9,"st":"TX"},"780":{"avgComp":2.125,"n":4.0,"avgUnits":4.3,"st":"TX"},"781":{"avgComp":2.25,"n":6.0,"avgUnits":2.5,"st":"TX"},"782":{"avgComp":2.604,"n":18.0,"avgUnits":4.2,"st":"TX"},"783":{"avgComp":1.75,"n":1.0,"avgUnits":7.0,"st":"TX"},"784":{"avgComp":2.25,"n":1.0,"avgUnits":4.3,"st":"TX"},"785":{"avgComp":2.469,"n":8.0,"avgUnits":3.9,"st":"TX"},"786":{"avgComp":1.375,"n":2.0,"avgUnits":3.5,"st":"TX"},"787":{"avgComp":2.163,"n":31.0,"avgUnits":5.0,"st":"TX"},"788":{"avgComp":2.75,"n":1.0,"avgUnits":1.3,"st":"TX"},"790":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"TX"},"799":{"avgComp":2.25,"n":2.0,"avgUnits":1.0,"st":"TX"},"800":{"avgComp":1.812,"n":19.0,"avgUnits":2.5,"st":"CO"},"801":{"avgComp":1.844,"n":48.0,"avgUnits":3.7,"st":"CO"},"802":{"avgComp":1.948,"n":24.0,"avgUnits":6.2,"st":"CO"},"803":{"avgComp":1.875,"n":4.0,"avgUnits":3.8,"st":"CO"},"804":{"avgComp":2.042,"n":6.0,"avgUnits":4.6,"st":"CO"},"805":{"avgComp":2.075,"n":5.0,"avgUnits":1.7,"st":"CO"},"808":{"avgComp":2.0,"n":1.0,"avgUnits":2.0,"st":"CO"},"809":{"avgComp":2.0,"n":8.0,"avgUnits":3.8,"st":"CO"},"810":{"avgComp":1.5,"n":2.0,"avgUnits":1.5,"st":"CO"},"811":{"avgComp":2.0,"n":1.0,"avgUnits":1.0,"st":"CO"},"812":{"avgComp":1.5,"n":1.0,"avgUnits":8.0,"st":"CO"},"813":{"avgComp":2.25,"n":2.0,"avgUnits":2.0,"st":"CO"},"814":{"avgComp":2.25,"n":2.0,"avgUnits":1.6,"st":"CO"},"815":{"avgComp":2.15,"n":1.0,"avgUnits":2.0,"st":"CO"},"816":{"avgComp":1.375,"n":2.0,"avgUnits":1.5,"st":"CO"},"820":{"avgComp":1.667,"n":3.0,"avgUnits":2.2,"st":"WY"},"824":{"avgComp":2.0,"n":1.0,"avgUnits":4.0,"st":"WY"},"829":{"avgComp":2.0,"n":1.0,"avgUnits":18.3,"st":"WY"},"832":{"avgComp":1.875,"n":2.0,"avgUnits":3.4,"st":"ID"},"833":{"avgComp":2.25,"n":1.0,"avgUnits":1.7,"st":"ID"},"834":{"avgComp":2.25,"n":3.0,"avgUnits":3.3,"st":"ID"},"835":{"avgComp":1.0,"n":1.0,"avgUnits":3.3,"st":"ID"},"836":{"avgComp":1.625,"n":2.0,"avgUnits":3.5,"st":"ID"},"837":{"avgComp":2.0,"n":3.0,"avgUnits":15.5,"st":"ID"},"838":{"avgComp":2.25,"n":3.0,"avgUnits":8.7,"st":"ID"},"840":{"avgComp":2.017,"n":53.0,"avgUnits":4.6,"st":"UT"},"841":{"avgComp":2.208,"n":18.0,"avgUnits":5.1,"st":"UT"},"843":{"avgComp":2.375,"n":3.0,"avgUnits":7.3,"st":"UT"},"844":{"avgComp":2.167,"n":3.0,"avgUnits":3.2,"st":"UT"},"845":{"avgComp":1.0,"n":1.0,"avgUnits":2.7,"st":"UT"},"846":{"avgComp":2.0,"n":1.0,"avgUnits":3.0,"st":"UT"},"847":{"avgComp":2.062,"n":4.0,"avgUnits":3.5,"st":"UT"},"850":{"avgComp":2.158,"n":45.0,"avgUnits":11.2,"st":"AZ"},"851":{"avgComp":2.167,"n":3.0,"avgUnits":3.8,"st":"AZ"},"852":{"avgComp":2.093,"n":77.0,"avgUnits":7.0,"st":"AZ"},"853":{"avgComp":2.375,"n":18.0,"avgUnits":3.8,"st":"AZ"},"857":{"avgComp":2.438,"n":6.0,"avgUnits":2.4,"st":"AZ"},"863":{"avgComp":2.0,"n":2.0,"avgUnits":4.0,"st":"AZ"},"864":{"avgComp":2.5,"n":1.0,"avgUnits":7.3,"st":"AZ"},"871":{"avgComp":1.875,"n":3.0,"avgUnits":2.1,"st":"NM"},"875":{"avgComp":2.5,"n":2.0,"avgUnits":2.4,"st":"NM"},"880":{"avgComp":1.75,"n":1.0,"avgUnits":3.3,"st":"NM"},"881":{"avgComp":1.5,"n":1.0,"avgUnits":2.0,"st":"NM"},"882":{"avgComp":1.875,"n":2.0,"avgUnits":1.6,"st":"NM"},"890":{"avgComp":2.125,"n":4.0,"avgUnits":4.0,"st":"NV"},"891":{"avgComp":2.147,"n":29.0,"avgUnits":3.3,"st":"NV"},"894":{"avgComp":1.688,"n":2.0,"avgUnits":6.2,"st":"NV"},"895":{"avgComp":2.219,"n":4.0,"avgUnits":3.1,"st":"NV"},"900":{"avgComp":2.021,"n":18.0,"avgUnits":3.6,"st":"CA"},"902":{"avgComp":1.948,"n":36.0,"avgUnits":3.5,"st":"CA"},"903":{"avgComp":2.5,"n":1.0,"avgUnits":1.7,"st":"CA"},"904":{"avgComp":1.625,"n":1.0,"avgUnits":1.3,"st":"CA"},"905":{"avgComp":1.646,"n":12.0,"avgUnits":3.2,"st":"CA"},"906":{"avgComp":1.991,"n":14.0,"avgUnits":2.3,"st":"CA"},"907":{"avgComp":1.912,"n":17.0,"avgUnits":3.7,"st":"CA"},"908":{"avgComp":2.125,"n":6.0,"avgUnits":3.8,"st":"CA"},"910":{"avgComp":2.088,"n":10.0,"avgUnits":15.8,"st":"CA"},"911":{"avgComp":1.856,"n":9.0,"avgUnits":1.7,"st":"CA"},"912":{"avgComp":1.789,"n":16.0,"avgUnits":3.8,"st":"CA"},"913":{"avgComp":1.82,"n":69.0,"avgUnits":3.9,"st":"CA"},"914":{"avgComp":1.971,"n":17.0,"avgUnits":4.1,"st":"CA"},"915":{"avgComp":1.964,"n":7.0,"avgUnits":1.4,"st":"CA"},"916":{"avgComp":1.93,"n":5.0,"avgUnits":3.5,"st":"CA"},"917":{"avgComp":1.982,"n":54.0,"avgUnits":3.2,"st":"CA"},"918":{"avgComp":1.0,"n":1.0,"avgUnits":1.3,"st":"CA"},"919":{"avgComp":1.893,"n":14.0,"avgUnits":7.6,"st":"CA"},"920":{"avgComp":1.623,"n":32.0,"avgUnits":3.9,"st":"CA"},"921":{"avgComp":1.637,"n":42.0,"avgUnits":4.9,"st":"CA"},"922":{"avgComp":1.929,"n":7.0,"avgUnits":1.9,"st":"CA"},"923":{"avgComp":1.896,"n":12.0,"avgUnits":3.1,"st":"CA"},"925":{"avgComp":1.853,"n":23.0,"avgUnits":4.4,"st":"CA"},"926":{"avgComp":1.777,"n":146.0,"avgUnits":18.7,"st":"CA"},"927":{"avgComp":1.922,"n":24.0,"avgUnits":8.8,"st":"CA"},"928":{"avgComp":1.893,"n":57.0,"avgUnits":3.5,"st":"CA"},"930":{"avgComp":1.812,"n":6.0,"avgUnits":2.2,"st":"CA"},"931":{"avgComp":1.438,"n":2.0,"avgUnits":3.0,"st":"CA"},"932":{"avgComp":2.625,"n":2.0,"avgUnits":1.4,"st":"CA"},"933":{"avgComp":2.312,"n":8.0,"avgUnits":4.3,"st":"CA"},"934":{"avgComp":1.944,"n":9.0,"avgUnits":3.5,"st":"CA"},"935":{"avgComp":2.031,"n":4.0,"avgUnits":2.5,"st":"CA"},"936":{"avgComp":2.304,"n":7.0,"avgUnits":9.1,"st":"CA"},"937":{"avgComp":2.062,"n":10.0,"avgUnits":4.7,"st":"CA"},"939":{"avgComp":1.946,"n":7.0,"avgUnits":2.3,"st":"CA"},"940":{"avgComp":1.481,"n":20.0,"avgUnits":3.4,"st":"CA"},"941":{"avgComp":1.556,"n":9.0,"avgUnits":7.8,"st":"CA"},"944":{"avgComp":1.5,"n":1.0,"avgUnits":1.0,"st":"CA"},"945":{"avgComp":1.658,"n":64.0,"avgUnits":5.9,"st":"CA"},"946":{"avgComp":1.625,"n":2.0,"avgUnits":1.6,"st":"CA"},"947":{"avgComp":1.25,"n":1.0,"avgUnits":17.7,"st":"CA"},"949":{"avgComp":1.864,"n":11.0,"avgUnits":5.1,"st":"CA"},"950":{"avgComp":1.362,"n":29.0,"avgUnits":3.3,"st":"CA"},"951":{"avgComp":1.4,"n":44.0,"avgUnits":17.2,"st":"CA"},"952":{"avgComp":1.969,"n":4.0,"avgUnits":1.3,"st":"CA"},"953":{"avgComp":2.271,"n":12.0,"avgUnits":5.6,"st":"CA"},"954":{"avgComp":1.946,"n":7.0,"avgUnits":3.3,"st":"CA"},"955":{"avgComp":1.917,"n":3.0,"avgUnits":2.2,"st":"CA"},"956":{"avgComp":1.831,"n":31.0,"avgUnits":10.5,"st":"CA"},"957":{"avgComp":1.781,"n":16.0,"avgUnits":2.4,"st":"CA"},"958":{"avgComp":2.064,"n":21.0,"avgUnits":6.1,"st":"CA"},"959":{"avgComp":1.8,"n":5.0,"avgUnits":2.7,"st":"CA"},"960":{"avgComp":2.375,"n":2.0,"avgUnits":3.6,"st":"CA"},"967":{"avgComp":1.979,"n":6.0,"avgUnits":2.7,"st":"HI"},"968":{"avgComp":1.864,"n":11.0,"avgUnits":5.2,"st":"HI"},"970":{"avgComp":2.273,"n":11.0,"avgUnits":14.4,"st":"OR"},"971":{"avgComp":0.75,"n":1.0,"avgUnits":6.7,"st":"OR"},"972":{"avgComp":1.908,"n":9.0,"avgUnits":5.7,"st":"OR"},"973":{"avgComp":2.297,"n":8.0,"avgUnits":4.3,"st":"OR"},"974":{"avgComp":2.417,"n":3.0,"avgUnits":4.3,"st":"OR"},"975":{"avgComp":2.375,"n":2.0,"avgUnits":5.0,"st":"OR"},"976":{"avgComp":2.375,"n":1.0,"avgUnits":4.7,"st":"OR"},"977":{"avgComp":2.083,"n":9.0,"avgUnits":5.8,"st":"OR"},"980":{"avgComp":1.79,"n":34.0,"avgUnits":4.0,"st":"WA"},"981":{"avgComp":1.55,"n":10.0,"avgUnits":2.6,"st":"WA"},"982":{"avgComp":1.971,"n":7.0,"avgUnits":3.8,"st":"WA"},"983":{"avgComp":1.958,"n":3.0,"avgUnits":1.7,"st":"WA"},"984":{"avgComp":1.938,"n":2.0,"avgUnits":1.8,"st":"WA"},"985":{"avgComp":1.75,"n":1.0,"avgUnits":4.3,"st":"WA"},"986":{"avgComp":2.09,"n":5.0,"avgUnits":5.1,"st":"WA"},"989":{"avgComp":1.5,"n":1.0,"avgUnits":4.3,"st":"WA"},"990":{"avgComp":2.75,"n":1.0,"avgUnits":1.0,"st":"WA"},"991":{"avgComp":2.25,"n":1.0,"avgUnits":2.0,"st":"WA"},"992":{"avgComp":2.25,"n":4.0,"avgUnits":5.1,"st":"WA"},"993":{"avgComp":2.0,"n":1.0,"avgUnits":5.0,"st":"WA"},"995":{"avgComp":2.5,"n":1.0,"avgUnits":4.0,"st":"AK"},"996":{"avgComp":2.5,"n":1.0,"avgUnits":1.7,"st":"AK"}},"ezip":{"02026":{"avgComp":1.542,"n":3.0,"avgUnits":6.2,"st":"MA"},"08053":{"avgComp":2.75,"n":4.0,"avgUnits":5.8,"st":"NJ"},"10950":{"avgComp":2.5,"n":3.0,"avgUnits":13.1,"st":"NY"},"10952":{"avgComp":2.583,"n":3.0,"avgUnits":3.7,"st":"NY"},"10977":{"avgComp":2.75,"n":3.0,"avgUnits":5.9,"st":"NY"},"11747":{"avgComp":2.562,"n":4.0,"avgUnits":2.8,"st":"NY"},"17601":{"avgComp":2.417,"n":3.0,"avgUnits":3.1,"st":"PA"},"18940":{"avgComp":2.15,"n":5.0,"avgUnits":13.1,"st":"PA"},"19063":{"avgComp":2.417,"n":3.0,"avgUnits":3.4,"st":"PA"},"19382":{"avgComp":2.292,"n":3.0,"avgUnits":6.3,"st":"PA"},"19422":{"avgComp":2.562,"n":4.0,"avgUnits":7.8,"st":"PA"},"20151":{"avgComp":2.0,"n":3.0,"avgUnits":6.9,"st":"VA"},"20850":{"avgComp":2.3,"n":5.0,"avgUnits":2.7,"st":"MD"},"20852":{"avgComp":2.3,"n":5.0,"avgUnits":8.7,"st":"MD"},"20854":{"avgComp":2.333,"n":3.0,"avgUnits":1.7,"st":"MD"},"20878":{"avgComp":2.05,"n":5.0,"avgUnits":3.7,"st":"MD"},"22030":{"avgComp":2.25,"n":7.0,"avgUnits":6.6,"st":"VA"},"22033":{"avgComp":2.4,"n":5.0,"avgUnits":2.4,"st":"VA"},"22182":{"avgComp":1.971,"n":7.0,"avgUnits":4.5,"st":"VA"},"23452":{"avgComp":2.417,"n":6.0,"avgUnits":4.9,"st":"VA"},"27513":{"avgComp":1.75,"n":4.0,"avgUnits":5.2,"st":"NC"},"27615":{"avgComp":1.958,"n":3.0,"avgUnits":8.1,"st":"NC"},"28202":{"avgComp":2.142,"n":3.0,"avgUnits":6.4,"st":"NC"},"28204":{"avgComp":1.917,"n":3.0,"avgUnits":8.2,"st":"NC"},"28205":{"avgComp":2.212,"n":4.0,"avgUnits":3.5,"st":"NC"},"28226":{"avgComp":1.688,"n":4.0,"avgUnits":4.6,"st":"NC"},"28277":{"avgComp":2.229,"n":6.0,"avgUnits":12.7,"st":"NC"},"29486":{"avgComp":2.405,"n":4.0,"avgUnits":4.2,"st":"SC"},"29730":{"avgComp":1.917,"n":3.0,"avgUnits":9.9,"st":"SC"},"30004":{"avgComp":2.0,"n":4.0,"avgUnits":3.6,"st":"GA"},"30005":{"avgComp":2.25,"n":3.0,"avgUnits":11.8,"st":"GA"},"30022":{"avgComp":2.2,"n":5.0,"avgUnits":6.2,"st":"GA"},"30024":{"avgComp":1.438,"n":6.0,"avgUnits":5.5,"st":"GA"},"30040":{"avgComp":2.5,"n":3.0,"avgUnits":2.6,"st":"GA"},"30041":{"avgComp":1.25,"n":3.0,"avgUnits":5.6,"st":"GA"},"30075":{"avgComp":2.125,"n":4.0,"avgUnits":2.8,"st":"GA"},"30093":{"avgComp":2.35,"n":3.0,"avgUnits":3.2,"st":"GA"},"30096":{"avgComp":2.062,"n":4.0,"avgUnits":2.1,"st":"GA"},"30309":{"avgComp":2.458,"n":3.0,"avgUnits":3.0,"st":"GA"},"30328":{"avgComp":2.667,"n":3.0,"avgUnits":8.3,"st":"GA"},"30506":{"avgComp":2.167,"n":3.0,"avgUnits":2.2,"st":"GA"},"30518":{"avgComp":1.875,"n":3.0,"avgUnits":2.6,"st":"GA"},"31326":{"avgComp":2.0,"n":3.0,"avgUnits":6.0,"st":"GA"},"31520":{"avgComp":2.292,"n":3.0,"avgUnits":19.8,"st":"GA"},"32081":{"avgComp":2.625,"n":4.0,"avgUnits":10.6,"st":"FL"},"32092":{"avgComp":2.125,"n":3.0,"avgUnits":3.2,"st":"FL"},"32216":{"avgComp":2.583,"n":3.0,"avgUnits":2.9,"st":"FL"},"32714":{"avgComp":2.45,"n":5.0,"avgUnits":4.5,"st":"FL"},"32750":{"avgComp":2.55,"n":5.0,"avgUnits":5.8,"st":"FL"},"32771":{"avgComp":2.25,"n":3.0,"avgUnits":3.8,"st":"FL"},"32789":{"avgComp":2.35,"n":5.0,"avgUnits":2.7,"st":"FL"},"32801":{"avgComp":2.219,"n":4.0,"avgUnits":3.1,"st":"FL"},"32809":{"avgComp":2.333,"n":3.0,"avgUnits":1.6,"st":"FL"},"32819":{"avgComp":2.5,"n":6.0,"avgUnits":3.0,"st":"FL"},"33020":{"avgComp":2.15,"n":4.0,"avgUnits":1.9,"st":"FL"},"33027":{"avgComp":2.75,"n":3.0,"avgUnits":1.8,"st":"FL"},"33029":{"avgComp":2.531,"n":4.0,"avgUnits":1.0,"st":"FL"},"33126":{"avgComp":2.75,"n":4.0,"avgUnits":3.7,"st":"FL"},"33131":{"avgComp":2.333,"n":6.0,"avgUnits":3.0,"st":"FL"},"33134":{"avgComp":2.6,"n":5.0,"avgUnits":6.5,"st":"FL"},"33155":{"avgComp":2.45,"n":5.0,"avgUnits":1.7,"st":"FL"},"33156":{"avgComp":2.65,"n":5.0,"avgUnits":4.6,"st":"FL"},"33157":{"avgComp":2.625,"n":4.0,"avgUnits":2.0,"st":"FL"},"33162":{"avgComp":2.667,"n":3.0,"avgUnits":1.1,"st":"FL"},"33165":{"avgComp":2.75,"n":4.0,"avgUnits":4.1,"st":"FL"},"33166":{"avgComp":2.15,"n":5.0,"avgUnits":2.4,"st":"FL"},"33173":{"avgComp":2.667,"n":6.0,"avgUnits":3.1,"st":"FL"},"33175":{"avgComp":2.542,"n":3.0,"avgUnits":5.3,"st":"FL"},"33176":{"avgComp":2.562,"n":6.0,"avgUnits":3.2,"st":"FL"},"33177":{"avgComp":2.688,"n":4.0,"avgUnits":2.4,"st":"FL"},"33178":{"avgComp":2.458,"n":3.0,"avgUnits":2.2,"st":"FL"},"33180":{"avgComp":2.458,"n":6.0,"avgUnits":7.0,"st":"FL"},"33186":{"avgComp":2.682,"n":11.0,"avgUnits":3.9,"st":"FL"},"33301":{"avgComp":2.333,"n":6.0,"avgUnits":4.2,"st":"FL"},"33316":{"avgComp":2.417,"n":3.0,"avgUnits":2.6,"st":"FL"},"33410":{"avgComp":2.167,"n":3.0,"avgUnits":2.4,"st":"FL"},"33414":{"avgComp":2.5,"n":3.0,"avgUnits":3.6,"st":"FL"},"33426":{"avgComp":2.75,"n":4.0,"avgUnits":2.1,"st":"FL"},"33432":{"avgComp":2.321,"n":7.0,"avgUnits":4.8,"st":"FL"},"33602":{"avgComp":2.375,"n":4.0,"avgUnits":6.0,"st":"FL"},"33609":{"avgComp":2.5,"n":3.0,"avgUnits":8.6,"st":"FL"},"33619":{"avgComp":2.667,"n":3.0,"avgUnits":2.8,"st":"FL"},"33624":{"avgComp":2.667,"n":3.0,"avgUnits":2.3,"st":"FL"},"33904":{"avgComp":1.917,"n":3.0,"avgUnits":4.3,"st":"FL"},"34109":{"avgComp":2.117,"n":3.0,"avgUnits":2.5,"st":"FL"},"35801":{"avgComp":2.75,"n":3.0,"avgUnits":1.8,"st":"AL"},"37067":{"avgComp":1.917,"n":3.0,"avgUnits":2.3,"st":"TN"},"37922":{"avgComp":2.333,"n":3.0,"avgUnits":4.6,"st":"TN"},"40207":{"avgComp":2.417,"n":3.0,"avgUnits":8.3,"st":"KY"},"40243":{"avgComp":2.375,"n":5.0,"avgUnits":8.1,"st":"KY"},"45040":{"avgComp":1.562,"n":4.0,"avgUnits":2.5,"st":"OH"},"47130":{"avgComp":2.5,"n":3.0,"avgUnits":5.9,"st":"IN"},"48009":{"avgComp":1.792,"n":3.0,"avgUnits":12.0,"st":"MI"},"48025":{"avgComp":2.417,"n":3.0,"avgUnits":28.7,"st":"MI"},"48034":{"avgComp":2.542,"n":3.0,"avgUnits":5.8,"st":"MI"},"48044":{"avgComp":2.5,"n":8.0,"avgUnits":3.6,"st":"MI"},"48075":{"avgComp":2.312,"n":4.0,"avgUnits":6.6,"st":"MI"},"48084":{"avgComp":1.75,"n":5.0,"avgUnits":16.1,"st":"MI"},"48098":{"avgComp":2.242,"n":3.0,"avgUnits":7.0,"st":"MI"},"48116":{"avgComp":2.333,"n":3.0,"avgUnits":4.7,"st":"MI"},"48124":{"avgComp":2.688,"n":6.0,"avgUnits":16.4,"st":"MI"},"48187":{"avgComp":2.219,"n":4.0,"avgUnits":2.9,"st":"MI"},"48188":{"avgComp":1.667,"n":3.0,"avgUnits":3.8,"st":"MI"},"48226":{"avgComp":1.917,"n":3.0,"avgUnits":5.6,"st":"MI"},"48304":{"avgComp":1.688,"n":4.0,"avgUnits":2.3,"st":"MI"},"48317":{"avgComp":2.5,"n":3.0,"avgUnits":4.8,"st":"MI"},"48334":{"avgComp":2.375,"n":4.0,"avgUnits":16.4,"st":"MI"},"48371":{"avgComp":1.927,"n":3.0,"avgUnits":6.6,"st":"MI"},"48375":{"avgComp":2.083,"n":3.0,"avgUnits":3.3,"st":"MI"},"55447":{"avgComp":1.833,"n":3.0,"avgUnits":4.2,"st":"MN"},"60015":{"avgComp":2.167,"n":3.0,"avgUnits":2.4,"st":"IL"},"60018":{"avgComp":2.667,"n":3.0,"avgUnits":2.0,"st":"IL"},"60062":{"avgComp":2.0,"n":3.0,"avgUnits":6.3,"st":"IL"},"60067":{"avgComp":2.667,"n":3.0,"avgUnits":2.0,"st":"IL"},"60068":{"avgComp":2.167,"n":3.0,"avgUnits":9.0,"st":"IL"},"60173":{"avgComp":1.575,"n":5.0,"avgUnits":11.1,"st":"IL"},"60402":{"avgComp":2.583,"n":3.0,"avgUnits":5.2,"st":"IL"},"60563":{"avgComp":1.7,"n":5.0,"avgUnits":7.6,"st":"IL"},"64068":{"avgComp":2.417,"n":3.0,"avgUnits":2.3,"st":"MO"},"66210":{"avgComp":2.333,"n":3.0,"avgUnits":7.0,"st":"KS"},"70119":{"avgComp":2.792,"n":3.0,"avgUnits":33.6,"st":"LA"},"70508":{"avgComp":2.75,"n":3.0,"avgUnits":8.8,"st":"LA"},"70816":{"avgComp":2.583,"n":3.0,"avgUnits":2.5,"st":"LA"},"75019":{"avgComp":1.188,"n":4.0,"avgUnits":2.8,"st":"TX"},"75024":{"avgComp":2.219,"n":4.0,"avgUnits":1.4,"st":"TX"},"75025":{"avgComp":1.417,"n":3.0,"avgUnits":1.9,"st":"TX"},"75032":{"avgComp":2.083,"n":3.0,"avgUnits":1.8,"st":"TX"},"75034":{"avgComp":1.75,"n":3.0,"avgUnits":2.7,"st":"TX"},"75035":{"avgComp":1.812,"n":4.0,"avgUnits":2.5,"st":"TX"},"75056":{"avgComp":1.375,"n":4.0,"avgUnits":3.5,"st":"TX"},"75062":{"avgComp":2.5,"n":3.0,"avgUnits":1.4,"st":"TX"},"75063":{"avgComp":1.25,"n":3.0,"avgUnits":1.6,"st":"TX"},"75070":{"avgComp":2.25,"n":4.0,"avgUnits":5.7,"st":"TX"},"75078":{"avgComp":2.188,"n":6.0,"avgUnits":4.3,"st":"TX"},"75093":{"avgComp":2.438,"n":4.0,"avgUnits":2.8,"st":"TX"},"75234":{"avgComp":1.833,"n":3.0,"avgUnits":3.1,"st":"TX"},"75240":{"avgComp":1.583,"n":3.0,"avgUnits":7.6,"st":"TX"},"75244":{"avgComp":2.292,"n":3.0,"avgUnits":22.1,"st":"TX"},"75703":{"avgComp":2.333,"n":3.0,"avgUnits":9.7,"st":"TX"},"76006":{"avgComp":2.0,"n":3.0,"avgUnits":7.0,"st":"TX"},"76092":{"avgComp":2.417,"n":3.0,"avgUnits":2.5,"st":"TX"},"76107":{"avgComp":2.438,"n":4.0,"avgUnits":1.8,"st":"TX"},"77007":{"avgComp":2.5,"n":3.0,"avgUnits":1.9,"st":"TX"},"77008":{"avgComp":2.5,"n":3.0,"avgUnits":16.4,"st":"TX"},"77027":{"avgComp":2.583,"n":3.0,"avgUnits":4.1,"st":"TX"},"77070":{"avgComp":2.208,"n":3.0,"avgUnits":3.0,"st":"TX"},"77072":{"avgComp":2.125,"n":4.0,"avgUnits":1.2,"st":"TX"},"77079":{"avgComp":2.5,"n":3.0,"avgUnits":3.4,"st":"TX"},"77356":{"avgComp":2.5,"n":3.0,"avgUnits":3.2,"st":"TX"},"77433":{"avgComp":2.333,"n":3.0,"avgUnits":2.1,"st":"TX"},"77478":{"avgComp":2.375,"n":3.0,"avgUnits":2.7,"st":"TX"},"77479":{"avgComp":1.667,"n":3.0,"avgUnits":2.2,"st":"TX"},"77494":{"avgComp":2.268,"n":7.0,"avgUnits":4.7,"st":"TX"},"78132":{"avgComp":2.25,"n":3.0,"avgUnits":2.9,"st":"TX"},"78230":{"avgComp":2.667,"n":3.0,"avgUnits":2.8,"st":"TX"},"78232":{"avgComp":2.75,"n":5.0,"avgUnits":5.9,"st":"TX"},"78501":{"avgComp":2.333,"n":3.0,"avgUnits":3.6,"st":"TX"},"78731":{"avgComp":2.125,"n":4.0,"avgUnits":3.4,"st":"TX"},"78746":{"avgComp":2.333,"n":3.0,"avgUnits":5.5,"st":"TX"},"80014":{"avgComp":2.167,"n":3.0,"avgUnits":1.9,"st":"CO"},"80020":{"avgComp":1.531,"n":4.0,"avgUnits":1.6,"st":"CO"},"80108":{"avgComp":1.75,"n":3.0,"avgUnits":2.7,"st":"CO"},"80109":{"avgComp":1.583,"n":3.0,"avgUnits":2.1,"st":"CO"},"80111":{"avgComp":1.812,"n":8.0,"avgUnits":3.8,"st":"CO"},"80112":{"avgComp":1.862,"n":8.0,"avgUnits":2.6,"st":"CO"},"80120":{"avgComp":1.938,"n":4.0,"avgUnits":2.3,"st":"CO"},"80130":{"avgComp":1.417,"n":3.0,"avgUnits":2.9,"st":"CO"},"80134":{"avgComp":2.2,"n":5.0,"avgUnits":2.9,"st":"CO"},"80222":{"avgComp":1.95,"n":5.0,"avgUnits":1.9,"st":"CO"},"80302":{"avgComp":2.0,"n":3.0,"avgUnits":4.6,"st":"CO"},"84020":{"avgComp":2.018,"n":7.0,"avgUnits":4.6,"st":"UT"},"84032":{"avgComp":2.0,"n":3.0,"avgUnits":5.1,"st":"UT"},"84041":{"avgComp":2.083,"n":3.0,"avgUnits":2.1,"st":"UT"},"84043":{"avgComp":1.75,"n":4.0,"avgUnits":5.8,"st":"UT"},"84070":{"avgComp":1.688,"n":4.0,"avgUnits":4.4,"st":"UT"},"84095":{"avgComp":2.417,"n":3.0,"avgUnits":3.7,"st":"UT"},"84109":{"avgComp":2.333,"n":3.0,"avgUnits":2.5,"st":"UT"},"84117":{"avgComp":2.208,"n":3.0,"avgUnits":3.9,"st":"UT"},"84123":{"avgComp":2.583,"n":3.0,"avgUnits":20.1,"st":"UT"},"85012":{"avgComp":2.229,"n":6.0,"avgUnits":28.2,"st":"AZ"},"85016":{"avgComp":2.25,"n":5.0,"avgUnits":6.4,"st":"AZ"},"85018":{"avgComp":2.188,"n":4.0,"avgUnits":2.2,"st":"AZ"},"85020":{"avgComp":2.0,"n":3.0,"avgUnits":9.2,"st":"AZ"},"85044":{"avgComp":2.333,"n":3.0,"avgUnits":43.8,"st":"AZ"},"85050":{"avgComp":2.25,"n":3.0,"avgUnits":5.7,"st":"AZ"},"85086":{"avgComp":2.438,"n":4.0,"avgUnits":1.8,"st":"AZ"},"85204":{"avgComp":2.0,"n":3.0,"avgUnits":4.1,"st":"AZ"},"85248":{"avgComp":2.25,"n":4.0,"avgUnits":3.4,"st":"AZ"},"85254":{"avgComp":2.011,"n":11.0,"avgUnits":4.3,"st":"AZ"},"85255":{"avgComp":1.938,"n":4.0,"avgUnits":4.3,"st":"AZ"},"85258":{"avgComp":2.458,"n":3.0,"avgUnits":22.1,"st":"AZ"},"85259":{"avgComp":2.25,"n":3.0,"avgUnits":2.4,"st":"AZ"},"85260":{"avgComp":1.925,"n":10.0,"avgUnits":12.3,"st":"AZ"},"85295":{"avgComp":2.125,"n":4.0,"avgUnits":10.0,"st":"AZ"},"85340":{"avgComp":2.417,"n":3.0,"avgUnits":3.4,"st":"AZ"},"85364":{"avgComp":2.792,"n":3.0,"avgUnits":3.3,"st":"AZ"},"85392":{"avgComp":2.417,"n":3.0,"avgUnits":4.9,"st":"AZ"},"89113":{"avgComp":2.375,"n":5.0,"avgUnits":4.2,"st":"NV"},"89118":{"avgComp":2.0,"n":3.0,"avgUnits":5.2,"st":"NV"},"89146":{"avgComp":1.875,"n":3.0,"avgUnits":4.0,"st":"NV"},"89148":{"avgComp":2.25,"n":3.0,"avgUnits":1.9,"st":"NV"},"90045":{"avgComp":2.083,"n":3.0,"avgUnits":3.0,"st":"CA"},"90212":{"avgComp":1.65,"n":5.0,"avgUnits":5.7,"st":"CA"},"90240":{"avgComp":2.062,"n":10.0,"avgUnits":2.9,"st":"CA"},"90241":{"avgComp":2.321,"n":7.0,"avgUnits":5.3,"st":"CA"},"90277":{"avgComp":1.75,"n":3.0,"avgUnits":2.7,"st":"CA"},"90501":{"avgComp":1.875,"n":3.0,"avgUnits":3.9,"st":"CA"},"90505":{"avgComp":1.5,"n":5.0,"avgUnits":2.7,"st":"CA"},"90601":{"avgComp":2.0,"n":3.0,"avgUnits":2.7,"st":"CA"},"90638":{"avgComp":2.125,"n":3.0,"avgUnits":2.4,"st":"CA"},"90701":{"avgComp":1.417,"n":3.0,"avgUnits":1.8,"st":"CA"},"90703":{"avgComp":2.25,"n":3.0,"avgUnits":4.2,"st":"CA"},"90706":{"avgComp":2.292,"n":3.0,"avgUnits":5.0,"st":"CA"},"90720":{"avgComp":2.25,"n":3.0,"avgUnits":5.8,"st":"CA"},"90755":{"avgComp":1.292,"n":3.0,"avgUnits":1.6,"st":"CA"},"91006":{"avgComp":2.062,"n":4.0,"avgUnits":1.2,"st":"CA"},"91101":{"avgComp":2.125,"n":3.0,"avgUnits":2.4,"st":"CA"},"91105":{"avgComp":1.781,"n":4.0,"avgUnits":1.3,"st":"CA"},"91203":{"avgComp":1.964,"n":7.0,"avgUnits":3.9,"st":"CA"},"91302":{"avgComp":1.625,"n":6.0,"avgUnits":2.2,"st":"CA"},"91316":{"avgComp":2.375,"n":4.0,"avgUnits":3.4,"st":"CA"},"91324":{"avgComp":2.0,"n":3.0,"avgUnits":7.2,"st":"CA"},"91355":{"avgComp":1.656,"n":4.0,"avgUnits":4.2,"st":"CA"},"91356":{"avgComp":1.792,"n":3.0,"avgUnits":4.1,"st":"CA"},"91361":{"avgComp":1.583,"n":3.0,"avgUnits":2.3,"st":"CA"},"91362":{"avgComp":1.656,"n":4.0,"avgUnits":4.4,"st":"CA"},"91364":{"avgComp":1.844,"n":9.0,"avgUnits":4.3,"st":"CA"},"91367":{"avgComp":2.023,"n":11.0,"avgUnits":7.0,"st":"CA"},"91403":{"avgComp":2.025,"n":5.0,"avgUnits":6.3,"st":"CA"},"91423":{"avgComp":2.167,"n":3.0,"avgUnits":8.4,"st":"CA"},"91436":{"avgComp":1.594,"n":4.0,"avgUnits":2.0,"st":"CA"},"91506":{"avgComp":2.125,"n":3.0,"avgUnits":1.6,"st":"CA"},"91709":{"avgComp":1.938,"n":6.0,"avgUnits":2.3,"st":"CA"},"91723":{"avgComp":2.406,"n":4.0,"avgUnits":2.4,"st":"CA"},"91730":{"avgComp":2.094,"n":8.0,"avgUnits":4.0,"st":"CA"},"91764":{"avgComp":2.417,"n":3.0,"avgUnits":4.2,"st":"CA"},"91780":{"avgComp":1.292,"n":3.0,"avgUnits":2.1,"st":"CA"},"91791":{"avgComp":2.083,"n":3.0,"avgUnits":4.1,"st":"CA"},"91914":{"avgComp":1.75,"n":4.0,"avgUnits":3.1,"st":"CA"},"92008":{"avgComp":1.525,"n":5.0,"avgUnits":1.8,"st":"CA"},"92010":{"avgComp":1.75,"n":3.0,"avgUnits":9.2,"st":"CA"},"92011":{"avgComp":1.688,"n":4.0,"avgUnits":4.3,"st":"CA"},"92024":{"avgComp":1.583,"n":3.0,"avgUnits":2.6,"st":"CA"},"92064":{"avgComp":1.417,"n":3.0,"avgUnits":3.6,"st":"CA"},"92078":{"avgComp":1.45,"n":4.0,"avgUnits":2.8,"st":"CA"},"92101":{"avgComp":1.725,"n":5.0,"avgUnits":6.0,"st":"CA"},"92108":{"avgComp":1.95,"n":5.0,"avgUnits":8.2,"st":"CA"},"92109":{"avgComp":1.417,"n":3.0,"avgUnits":3.7,"st":"CA"},"92111":{"avgComp":2.083,"n":3.0,"avgUnits":2.2,"st":"CA"},"92121":{"avgComp":1.25,"n":3.0,"avgUnits":8.9,"st":"CA"},"92127":{"avgComp":1.5,"n":5.0,"avgUnits":4.7,"st":"CA"},"92130":{"avgComp":1.917,"n":3.0,"avgUnits":3.0,"st":"CA"},"92131":{"avgComp":1.65,"n":5.0,"avgUnits":7.4,"st":"CA"},"92211":{"avgComp":2.0,"n":3.0,"avgUnits":1.5,"st":"CA"},"92562":{"avgComp":1.875,"n":4.0,"avgUnits":14.6,"st":"CA"},"92563":{"avgComp":1.969,"n":4.0,"avgUnits":1.5,"st":"CA"},"92612":{"avgComp":2.01,"n":13.0,"avgUnits":7.4,"st":"CA"},"92614":{"avgComp":1.859,"n":8.0,"avgUnits":249.2,"st":"CA"},"92618":{"avgComp":1.953,"n":8.0,"avgUnits":22.3,"st":"CA"},"92626":{"avgComp":1.704,"n":12.0,"avgUnits":6.2,"st":"CA"},"92627":{"avgComp":1.575,"n":5.0,"avgUnits":3.5,"st":"CA"},"92629":{"avgComp":1.8,"n":5.0,"avgUnits":6.1,"st":"CA"},"92630":{"avgComp":1.75,"n":4.0,"avgUnits":1.9,"st":"CA"},"92646":{"avgComp":1.808,"n":3.0,"avgUnits":6.1,"st":"CA"},"92647":{"avgComp":2.062,"n":4.0,"avgUnits":3.1,"st":"CA"},"92648":{"avgComp":1.643,"n":7.0,"avgUnits":1.9,"st":"CA"},"92649":{"avgComp":2.167,"n":3.0,"avgUnits":1.9,"st":"CA"},"92651":{"avgComp":1.792,"n":3.0,"avgUnits":1.8,"st":"CA"},"92653":{"avgComp":1.792,"n":6.0,"avgUnits":2.1,"st":"CA"},"92656":{"avgComp":1.85,"n":5.0,"avgUnits":1.8,"st":"CA"},"92660":{"avgComp":1.929,"n":7.0,"avgUnits":3.0,"st":"CA"},"92663":{"avgComp":1.5,"n":4.0,"avgUnits":4.4,"st":"CA"},"92672":{"avgComp":1.25,"n":4.0,"avgUnits":1.8,"st":"CA"},"92673":{"avgComp":1.616,"n":8.0,"avgUnits":3.4,"st":"CA"},"92675":{"avgComp":1.417,"n":3.0,"avgUnits":1.4,"st":"CA"},"92677":{"avgComp":1.531,"n":4.0,"avgUnits":3.5,"st":"CA"},"92683":{"avgComp":1.875,"n":4.0,"avgUnits":1.4,"st":"CA"},"92691":{"avgComp":1.911,"n":7.0,"avgUnits":9.7,"st":"CA"},"92694":{"avgComp":1.292,"n":3.0,"avgUnits":7.3,"st":"CA"},"92705":{"avgComp":1.906,"n":4.0,"avgUnits":24.2,"st":"CA"},"92708":{"avgComp":1.875,"n":6.0,"avgUnits":12.8,"st":"CA"},"92780":{"avgComp":1.833,"n":6.0,"avgUnits":3.3,"st":"CA"},"92806":{"avgComp":1.958,"n":3.0,"avgUnits":3.0,"st":"CA"},"92807":{"avgComp":1.792,"n":6.0,"avgUnits":2.6,"st":"CA"},"92808":{"avgComp":1.656,"n":4.0,"avgUnits":1.4,"st":"CA"},"92821":{"avgComp":2.188,"n":4.0,"avgUnits":9.6,"st":"CA"},"92860":{"avgComp":1.625,"n":3.0,"avgUnits":1.7,"st":"CA"},"92868":{"avgComp":2.0,"n":6.0,"avgUnits":4.8,"st":"CA"},"92870":{"avgComp":1.667,"n":3.0,"avgUnits":2.6,"st":"CA"},"92879":{"avgComp":2.25,"n":3.0,"avgUnits":3.4,"st":"CA"},"92886":{"avgComp":1.562,"n":4.0,"avgUnits":5.2,"st":"CA"},"93309":{"avgComp":2.583,"n":3.0,"avgUnits":7.1,"st":"CA"},"93401":{"avgComp":1.667,"n":3.0,"avgUnits":3.9,"st":"CA"},"93711":{"avgComp":2.083,"n":3.0,"avgUnits":5.9,"st":"CA"},"93722":{"avgComp":2.0,"n":3.0,"avgUnits":1.8,"st":"CA"},"93901":{"avgComp":2.042,"n":3.0,"avgUnits":2.3,"st":"CA"},"94010":{"avgComp":1.375,"n":8.0,"avgUnits":4.1,"st":"CA"},"94015":{"avgComp":1.667,"n":3.0,"avgUnits":2.8,"st":"CA"},"94080":{"avgComp":1.667,"n":3.0,"avgUnits":2.8,"st":"CA"},"94506":{"avgComp":1.875,"n":3.0,"avgUnits":2.5,"st":"CA"},"94513":{"avgComp":1.75,"n":3.0,"avgUnits":12.1,"st":"CA"},"94523":{"avgComp":1.75,"n":3.0,"avgUnits":3.7,"st":"CA"},"94526":{"avgComp":1.938,"n":4.0,"avgUnits":5.1,"st":"CA"},"94542":{"avgComp":1.667,"n":3.0,"avgUnits":1.4,"st":"CA"},"94566":{"avgComp":1.475,"n":5.0,"avgUnits":5.3,"st":"CA"},"94582":{"avgComp":1.292,"n":3.0,"avgUnits":3.1,"st":"CA"},"94583":{"avgComp":1.688,"n":12.0,"avgUnits":8.8,"st":"CA"},"94588":{"avgComp":1.65,"n":5.0,"avgUnits":8.9,"st":"CA"},"94901":{"avgComp":1.917,"n":3.0,"avgUnits":13.1,"st":"CA"},"94954":{"avgComp":1.875,"n":3.0,"avgUnits":2.2,"st":"CA"},"95008":{"avgComp":1.271,"n":6.0,"avgUnits":1.7,"st":"CA"},"95014":{"avgComp":1.208,"n":3.0,"avgUnits":2.2,"st":"CA"},"95032":{"avgComp":1.5,"n":4.0,"avgUnits":6.4,"st":"CA"},"95037":{"avgComp":1.417,"n":3.0,"avgUnits":3.2,"st":"CA"},"95054":{"avgComp":1.083,"n":3.0,"avgUnits":5.9,"st":"CA"},"95110":{"avgComp":1.583,"n":3.0,"avgUnits":4.4,"st":"CA"},"95112":{"avgComp":1.25,"n":5.0,"avgUnits":2.9,"st":"CA"},"95121":{"avgComp":1.062,"n":4.0,"avgUnits":2.8,"st":"CA"},"95122":{"avgComp":1.412,"n":4.0,"avgUnits":147.8,"st":"CA"},"95124":{"avgComp":1.792,"n":3.0,"avgUnits":1.9,"st":"CA"},"95127":{"avgComp":1.312,"n":4.0,"avgUnits":1.2,"st":"CA"},"95128":{"avgComp":1.708,"n":3.0,"avgUnits":4.2,"st":"CA"},"95131":{"avgComp":1.124,"n":6.0,"avgUnits":8.3,"st":"CA"},"95350":{"avgComp":1.917,"n":3.0,"avgUnits":8.2,"st":"CA"},"95401":{"avgComp":1.75,"n":3.0,"avgUnits":5.3,"st":"CA"},"95630":{"avgComp":1.636,"n":11.0,"avgUnits":6.9,"st":"CA"},"95661":{"avgComp":2.25,"n":3.0,"avgUnits":53.5,"st":"CA"},"95688":{"avgComp":2.0,"n":3.0,"avgUnits":5.1,"st":"CA"},"95758":{"avgComp":1.562,"n":4.0,"avgUnits":1.6,"st":"CA"},"95762":{"avgComp":1.792,"n":6.0,"avgUnits":3.4,"st":"CA"},"95825":{"avgComp":2.122,"n":9.0,"avgUnits":5.9,"st":"CA"},"96813":{"avgComp":1.75,"n":3.0,"avgUnits":2.3,"st":"HI"},"96814":{"avgComp":1.967,"n":3.0,"avgUnits":5.8,"st":"HI"},"97086":{"avgComp":1.75,"n":3.0,"avgUnits":2.9,"st":"OR"},"97239":{"avgComp":2.542,"n":3.0,"avgUnits":11.7,"st":"OR"},"97301":{"avgComp":2.292,"n":3.0,"avgUnits":6.5,"st":"OR"},"97401":{"avgComp":2.417,"n":3.0,"avgUnits":4.3,"st":"OR"},"97701":{"avgComp":1.844,"n":4.0,"avgUnits":4.2,"st":"OR"},"97703":{"avgComp":2.375,"n":3.0,"avgUnits":8.2,"st":"OR"},"98004":{"avgComp":2.094,"n":4.0,"avgUnits":3.0,"st":"WA"},"98005":{"avgComp":1.167,"n":3.0,"avgUnits":8.4,"st":"WA"},"98020":{"avgComp":1.708,"n":3.0,"avgUnits":8.3,"st":"WA"},"98029":{"avgComp":1.5,"n":3.0,"avgUnits":5.8,"st":"WA"},"98033":{"avgComp":1.969,"n":4.0,"avgUnits":2.4,"st":"WA"}}};
+
+const money = n => '$' + Math.round(n).toLocaleString('en-US');
+const pctFmt = p => p.toFixed(2) + '%';
+const DATA_AS_OF = 'June 2026';
+const PDM = {
+  name:'Vincent Roncelli', initials:'VR', title:'Partner Development Manager', loc:'RocketPro · Detroit, MI',
+  phone:'13137519593', phoneDisplay:'(313) 751-9593',
+  email:'VincentRoncelli@RocketMortgage.com',
+  linkedin:'https://www.linkedin.com/in/vincent-roncelli-7613456b/',
+  photo:'data:image/jpeg;base64,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',
+};
+
+function Clock(){
+  const [t,setT]=useState('');
+  useEffect(()=>{
+    const tick=()=>{const d=new Date();let h=d.getHours()%12; if(h===0)h=12; setT(h+':'+String(d.getMinutes()).padStart(2,'0'));};
+    tick(); const id=setInterval(tick,15000); return ()=>clearInterval(id);
+  },[]);
+  return <span>{t}</span>;
+}
+
+function Avatar({photo,initials,size=56,bg}){
+  const [err,setErr]=useState(false);
+  const style={width:size,height:size,flex:'0 0 '+size+'px',borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:Math.round(size*0.36),overflow:'hidden',color:'#fff',background:bg||'linear-gradient(135deg,var(--red),#F08A2E)'};
+  if(photo && !err) return <div style={style}><img src={photo} alt={initials} onError={()=>setErr(true)} style={{width:'100%',height:'100%',objectFit:'cover'}}/></div>;
+  return <div style={style}>{initials}</div>;
+}
+
+/* ---------------- icons ---------------- */
+const I = {
+  home:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  map:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><path d="M9 3v16M15 5v16" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  tools:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="3" y="3" width="7" height="7" rx="1.6" stroke="currentColor" strokeWidth="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.6" stroke="currentColor" strokeWidth="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.6" stroke="currentColor" strokeWidth="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.6" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  store:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M4 9 5 4h14l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16M9 20v-6h6v6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  pdm:p=><svg viewBox="0 0 24 24" fill="none" {...p}><circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.8"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  phone:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M5 3h4l2 5-2.5 1.5a12 12 0 0 0 5 5L16 11l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  chat:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M4 5h16v11H9l-4 3v-3H4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  cal:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  play:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M8 5v14l11-7z" fill="currentColor"/></svg>,
+  doc:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M6 2h8l4 4v16H6z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><path d="M14 2v4h4M9 13h6M9 17h6" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  check:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M5 12.5 10 17 19 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  chev:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  chevL:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  shield:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  calc:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  rocket:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M5 15c-1 1-1 4-1 4s3 0 4-1m1-3 7-7c2-2 4-2 4-2s0 2-2 4l-7 7-2 1-3-3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/></svg>,
+  pin:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  ext:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  book:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><path d="M4 19a2 2 0 0 0 2 2h13" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  spark:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>,
+  users:p=><svg viewBox="0 0 24 24" fill="none" {...p}><circle cx="9" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.8"/><path d="M3 20c0-3 2.7-5 6-5s6 2 6 5M16 5a3 3 0 0 1 0 6M21 20c0-2.2-1.3-3.8-3.5-4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  gift:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="4" y="9" width="16" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.8"/><path d="M4 13h16M12 9v11M12 9C9 9 7 7.5 7 6s2-2 3 0c1 1.5 2 3 2 3zm0 0c3 0 5-1.5 5-3s-2-2-3 0c-1 1.5-2 3-2 3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  scale:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3v18M6 21h12M5 6h14M5 6l-2.5 6a3 3 0 0 0 6 0L10 6M19 6l-2.5 6a3 3 0 0 0 6 0L20 6" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>,
+  cpu:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.8"/><rect x="9.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.8"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  chart:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  truck:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><circle cx="7" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.8"/><circle cx="17" cy="18" r="1.8" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  web:p=><svg viewBox="0 0 24 24" fill="none" {...p}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  umbrella:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3v3M3 12a9 9 0 0 1 18 0zM12 12v6a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  eye:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" strokeWidth="1.8"/></svg>,
+  eyeOff:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M3 3l18 18M10.6 6.2A9.7 9.7 0 0 1 12 6c6.4 0 10 6 10 6a16 16 0 0 1-3.3 3.9M6.3 7.4A16 16 0 0 0 2 12s3.6 6 10 6a9.6 9.6 0 0 0 3.4-.6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  lightning:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M13 2 4 14h6l-1 8 9-12h-6z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>,
+  out:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  mic:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" strokeWidth="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  yt:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="2.5" y="5.5" width="19" height="13" rx="4" stroke="currentColor" strokeWidth="1.8"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg>,
+  mail:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>,
+  li:p=><svg viewBox="0 0 24 24" fill="none" {...p}><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.8"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 11v6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  x:p=><svg viewBox="0 0 24 24" fill="none" {...p}><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>,
+};
+
+/* ---------------- data: roadmap ---------------- */
+const STAGES = [
+  {key:'explore',n:1,title:'Explore the path',tag:'Is going independent right for you?',time:'~30 min',tasks:[
+    {t:'Take the readiness check',d:'A quick gut check on income, pipeline, and timing.'},
+    {t:'Compare the models',d:'W-2 originator vs. owning your shop.'},
+    {t:'Run the comp estimator',d:'Model your income in Tools.'}]},
+  {key:'license',n:2,title:'Get individually licensed',tag:'NMLS MU4 plus SAFE exam',time:'2 to 4 weeks',tasks:[
+    {t:'Create your NMLS account',d:'Set up your record and MU4 filing.'},
+    {t:'Finish 20 hours of pre-licensing',d:'SAFE-required coursework, approved provider.'},
+    {t:'Pass the SAFE MLO exam',d:'National plus any state component.'},
+    {t:'Clear background and credit',d:'Fingerprints and authorization through NMLS.'}]},
+  {key:'business',n:3,title:'Form your business',tag:'Entity, EIN, name',time:'1 to 2 weeks',tasks:[
+    {t:'Choose an entity',d:'LLC or S-corp. Talk taxes with your CPA first.'},
+    {t:'Register the name and get an EIN',d:'State filing and IRS EIN.'},
+    {t:'Open business banking',d:'Operating account, separate from personal.'}]},
+  {key:'company',n:4,title:'License your company',tag:'NMLS MU1 plus surety bond',time:'4 to 8 weeks',tasks:[
+    {t:'File the MU1 company application',d:'Your PDM walks this with you line by line.'},
+    {t:'Name the qualifying individual',d:'The licensed person responsible for the company.'},
+    {t:'Secure your surety bond',d:'Amount is set by your state. Your PDM confirms.'},
+    {t:'Work the license checklist',d:'Open it in Tools and check items off.'}]},
+  {key:'ops',n:5,title:'Set up operations',tag:'LOS, compliance, E and O',time:'1 to 2 weeks',tasks:[
+    {t:'Pick your LOS and pricing engine',d:'Browse options in the Marketplace.'},
+    {t:'Stand up compliance',d:'Policies, a compliance system, E and O coverage.'},
+    {t:'Set up your workspace',d:'Office or remote, phone, email, e-sign.'}]},
+  {key:'approve',n:6,title:'Get approved with RocketPro',tag:'Your first wholesale partner',time:'2 to 3 days',rocket:true,tasks:[
+    {t:'Start your RocketPro application',d:'Your PDM submits and tracks it in Salesforce.'},
+    {t:'Verify NMLS and company docs',d:'Licenses, bond, and entity paperwork.'},
+    {t:'Get your AE assigned',d:'Your dedicated account executive for live deals.'}]},
+  {key:'fund',n:7,title:'Fund your first loan',tag:'Submit, clear, close',time:'Go time',rocket:true,tasks:[
+    {t:'Register your first loan',d:'Walk a live file with your PDM on the line.'},
+    {t:'Submit through RocketPro',d:'Price, lock, and send your package.'},
+    {t:'Close and get paid',d:'First commission as an independent broker.'}]},
+];
+
+/* ---------------- data: NMLS resources ---------------- */
+const RC = 'https://mortgage.nationwidelicensingsystem.org';
+const COMPILER = 'https://mortgage.nationwidelicensingsystem.org/knowledge/Products/nmls/stateresourcecenter/SitePages/Checklist-Compiler.aspx';
+const NMLS = [
+  {ic:I.book, t:'NMLS Resource Center', d:'The hub for all licensing guidance', url:RC},
+  {ic:I.doc, t:'Licensing checklists, requirements & fees', d:'Compile state checklists by license type', url:COMPILER},
+  {ic:I.chart, t:'License Requirements & Fees Chart', d:'Every NMLS license in one workbook', url:COMPILER},
+  {ic:I.users, t:'Company account & MU1 — getting started', d:'Request your company account and NMLS ID', url:RC},
+  {ic:I.book, t:'SAFE testing — schedule the MLO exam', d:'National and state exam components', url:RC},
+  {ic:I.book, t:'Pre-licensing & continuing education', d:'Approved providers and credit banking', url:RC},
+  {ic:I.shield, t:'Electronic Surety Bonds (ESB)', d:'Issue and track your bond inside NMLS', url:RC},
+  {ic:I.pin, t:'NMLS Consumer Access', d:'Verify licenses and company records', url:'https://www.nmlsconsumeraccess.org'},
+];
+
+/* ---------------- data: license checklists ---------------- */
+const CHECKLISTS = {
+  wholesale:[
+    {t:'Company Form (MU1) filed in NMLS', d:'Your master company record — used across every state.'},
+    {t:'Individual Form (MU2) for each control person', d:'Owners (25%+), officers, and control persons attest.'},
+    {t:'Individual Form (MU4) for the designated broker', d:'Your qualifying individual / designated broker.'},
+    {t:'Branch Form (MU3) for each branch office', d:'Only if you operate additional locations.'},
+    {t:'Surety bond posted via ESB', d:'Amount set by state and loan volume (often $20k+ to start).'},
+    {t:'Financial statements uploaded', d:'Balance sheet and income statement; net worth minimum varies.'},
+    {t:'Business plan uploaded to MU1 Document Uploads', d:'Named [Company Legal Name] Business Plan.'},
+    {t:'Formation docs + Certificate of Good Standing', d:'Entity paperwork and state authority to do business.'},
+    {t:'Registered agent on file', d:'Must match your Secretary of State record.'},
+    {t:'Background & credit authorization', d:'Fingerprints and credit pull for control persons.'},
+    {t:'Application & NMLS processing fees paid', d:'State license fee plus NMLS processing.'},
+  ],
+  correspondent:[
+    {t:'Company Form (MU1) filed in NMLS', d:'Correspondent lender license type / authority selected.'},
+    {t:'MU2 for each control person', d:'Attested by owners, officers, and control persons.'},
+    {t:'MU4 for the qualifying individual', d:'Documented lending and secondary-market experience.'},
+    {t:'Audited financial statements (CPA)', d:'Correspondents typically need audited financials.'},
+    {t:'Higher minimum net worth met', d:'Correspondent thresholds exceed broker/lender — confirm by state and agency.'},
+    {t:'Warehouse line of credit in place', d:'Executed agreement(s) showing you can fund in your own name.'},
+    {t:'Investor / takeout relationships documented', d:'Where you sell loans after funding.'},
+    {t:'Higher-tier surety bond via ESB', d:'Volume-based; correspondent tiers run higher.'},
+    {t:'Quality control plan (pre- and post-close)', d:'QC program covering origination through sale.'},
+    {t:'Agency approvals as applicable', d:'Fannie Mae, Freddie Mac, or Ginnie Mae where you pursue them.'},
+    {t:'Policies & procedures manual', d:'Operations, secondary marketing, and compliance.'},
+    {t:'Formation docs + Certificate of Good Standing', d:'Entity paperwork and authority to do business.'},
+    {t:'Background & credit authorization', d:'For all control persons.'},
+    {t:'Application & NMLS processing fees paid', d:'State license fee plus NMLS processing.'},
+  ],
+};
+
+const US_STATES = [['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming']];
+const CHANNELS = {
+  wholesale:{label:'Wholesale (Broker)', short:'Wholesale', license:'Mortgage Broker License', def:'You originate and submit loans to a wholesale lender like RocketPro, who underwrites and funds them. Lighter capital requirements — a broker license plus a surety bond in each state you work.'},
+  correspondent:{label:'Correspondent (Lender)', short:'Correspondent', license:'Mortgage Lender / Correspondent License', def:'You underwrite and fund loans in your own name on a warehouse line, then sell them to RocketPro or other investors. Higher net worth, audited financials, and a warehouse line are required.'},
+};
+
+/* ---------------- data: vendor marketplace ---------------- */
+const VENDORS = [
+  {n:'Model Match', cat:'Recruiting', ic:I.users, d:'Talent intelligence to find and recruit producing loan officers.', u:'https://modelmatch.com/rocket?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=model_match&utm_audience=partner'},
+  {n:'Sift', cat:'Recruiting', ic:I.users, d:'Relationship intelligence and a searchable people directory.', u:'https://get.justsift.com/rocketpro-and-sift-partner-offer/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=sift&utm_audience=partner'},
+  {n:'Vetted VA', cat:'Recruiting', ic:I.users, d:'Trained virtual assistants for mortgage teams.', u:'https://vettedva.com/rocket-pro-and-vetted-va/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=vetted_va&utm_audience=partner'},
+  {n:'Arive', cat:'Origination', ic:I.cpu, d:'All-in-one broker loan origination and point-of-sale platform.', u:'https://www.arive.com/rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=arive&utm_audience=partner'},
+  {n:'Shape', cat:'Origination', ic:I.cpu, d:'Sales CRM and point-of-sale automation.', u:'https://setshape.com/shape-rocket-pro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=shape&utm_audience=partner'},
+  {n:'Jupiter LOS', cat:'Origination', ic:I.cpu, d:'Loan origination system built for brokers.', u:'https://jupiterlos.com/'},
+  {n:'AILA', cat:'AI', ic:I.spark, d:'AI assistant for loan origination workflows.', u:'https://www.withaila.com/rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=aila&utm_audience=partner'},
+  {n:'Milo', cat:'AI', ic:I.spark, d:'AI assistant for mortgage businesses.', u:'https://www.mymilo.ai/rocket'},
+  {n:'Banking Bridge', cat:'Marketing', ic:I.chart, d:'Rate tables, lead capture, and co-marketing tools.', u:'http://www.bankingbridge.com/rocket-pro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=banking_bridge&utm_audience=partner'},
+  {n:'FinLocker (KeySteps)', cat:'Borrower tools', ic:I.lightning, d:'Borrower financial-readiness and nurture app.', u:'https://info.finlocker.com/keysteps-powered-by-finlocker-rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=finlocker&utm_audience=partner'},
+  {n:'Credit Builder Card', cat:'Borrower tools', ic:I.lightning, d:'Help borrowers build credit toward qualifying.', u:'https://creditbuildercard.com/rocketprobroker?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=credit_builder_card&utm_audience=partner'},
+  {n:'Calque', cat:'Borrower tools', ic:I.lightning, d:'Buy-before-you-sell trade-in program for clients.', u:'https://bbys.calqueinc.com/rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=calque&utm_audience=partner'},
+  {n:'Cotality', cat:'Data', ic:I.chart, d:'Property data and analytics (formerly CoreLogic).', u:'https://ctlty.co/4phEMNj?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=cotality&utm_audience=partner'},
+  {n:'Rocket Pro University', cat:'Training', ic:I.book, d:'Courses and certifications from Rocket Pro.', u:'https://university.rocketpro.com/learn?utm_source=storefront&utm_medium=other&utm_campaign=vendormarketplace&utm_content=rocket_pro_university&utm_audience=partner'},
+  {n:'OnCourse Learning', cat:'Training', ic:I.book, d:'NMLS-approved pre-licensing and continuing education.', u:'https://partners.oncourselearning.com/mortgage/rocketprotpo?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=oncourse_learning&utm_audience=partner'},
+  {n:'Starting Now', cat:'Training', ic:I.book, d:'Getting-started training for new-to-industry brokers.', u:'https://startingnow.org/partner-rocket-pro/'},
+  {n:'Strategic Compliance Partners', cat:'Compliance', ic:I.shield, d:'Outsourced compliance management for your shop.', u:'https://strategiccompliancepartners.com/rocket-pro-members/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=strategic_compliance_partners&utm_audience=partner'},
+  {n:'Rocket Close', cat:'Title & closing', ic:I.shield, d:'Title, escrow, and closing services.', u:'https://www.rocketclose.com/broker-title-escrow?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=rocket_close&utm_audience=partner'},
+  {n:'Perfect Closing Gift', cat:'Title & closing', ic:I.gift, d:'Curated closing gifts for your clients.', u:'https://www.perfectclosinggift.com/rpm/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=perfect_closing_gift&utm_audience=partner'},
+  {n:'Change Agents', cat:'Title & closing', ic:I.gift, d:'Branded gear and closing gifts that give back.', u:'https://changeagents.com/pages/rocket-pro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=sack_cloth_and_ashes&utm_audience=partner'},
+  {n:'Savvy', cat:'Insurance', ic:I.umbrella, d:'Homeowners insurance marketplace for your borrowers.', u:'https://savvy.insure/rocket-pro'},
+  {n:'Higginbotham', cat:'Insurance', ic:I.umbrella, d:'Business insurance and E&O coverage for brokerages.', u:'https://www.higginbotham.com/business-insurance/commercial-coverage/rocket-pro-brokerage/'},
+  {n:'LoanSites', cat:'Marketing', ic:I.web, d:'Websites and digital marketing for brokers.', u:'https://www.loansites.com/partners/rocket/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=loansites&utm_audience=partner'},
+  {n:'UPS', cat:'Operations', ic:I.truck, d:'Shipping discount for Rocket Pro partners.', u:'https://www.ups.com/mrd/promodiscount?loc=en_US&promoCd=DNG7BAYMF'},
+];
+const VCATS = ['All','Recruiting','Origination','AI','Borrower tools','Data','Training','Compliance','Title & closing','Insurance','Marketing','Operations'];
+
+/* ================= app ================= */
+function App(){
+  const [authed,setAuthed]=useState(false);
+  const [tab,setTab]=useState('home');
+  const [toolsView,setToolsView]=useState('hub');
+  const [done,setDone]=useState({});
+  const [openStage,setOpenStage]=useState(null);
+  const [appliedBps,setAppliedBps]=useState(null);
+  const [prof,setProf]=useState({fields:{},auto:[],saved:false,fileName:''});
+
+  if(!authed) return <Phone><SignIn onIn={()=>setAuthed(true)}/></Phone>;
+
+  const go=(t)=>{ setTab(t); if(t!=='tools') setToolsView('hub'); };
+  const openTool=(v)=>{ setTab('tools'); setToolsView(v); };
+  const logout=()=>{ setAuthed(false); setTab('home'); setToolsView('hub'); setOpenStage(null); setDone({}); setAppliedBps(null); setProf({fields:{},auto:[],saved:false,fileName:''}); };
+  const inSub = tab==='tools' && toolsView!=='hub';
+  const goBack=()=>{ if(inSub) setToolsView('hub'); };
+
+  const stageStatus = STAGES.map(s=>{
+    const d=s.tasks.filter((_,i)=>done[s.key+':'+i]).length;
+    return {c:d===s.tasks.length, d, t:s.tasks.length};
+  });
+  const currentIdx = (()=>{const i=stageStatus.findIndex(s=>!s.c); return i===-1?STAGES.length-1:i;})();
+  const totalTasks = STAGES.reduce((a,s)=>a+s.tasks.length,0);
+  const pct = Math.round(Object.values(done).filter(Boolean).length/totalTasks*100);
+  const toggle=(k,i)=>setDone(p=>({...p,[k+':'+i]:!p[k+':'+i]}));
+
+  return (
+    <Phone>
+      <TopBar inSub={inSub} goBack={goBack} goHome={()=>go('home')} logout={logout}/>
+      <div className="screen">
+        {tab==='home' && <Home pct={pct} cur={STAGES[currentIdx]} go={go} openTool={openTool} openStage={setOpenStage}/>}
+        {tab==='map' && <Roadmap stageStatus={stageStatus} currentIdx={currentIdx} openStage={setOpenStage}/>}
+        {tab==='tools' && <Tools view={toolsView} setView={setToolsView} appliedBps={appliedBps} setAppliedBps={setAppliedBps} openTool={openTool} prof={prof} setProf={setProf}/>}
+        {tab==='market' && <Market/>}
+        {tab==='pdm' && <Connect/>}
+      </div>
+
+      {openStage && <StageSheet stage={openStage} done={done} toggle={toggle} close={()=>setOpenStage(null)} goPDM={()=>{setOpenStage(null);go('pdm');}}/>}
+
+      <div className="tabbar">
+        {[['home','Home',I.home],['map','Roadmap',I.map],['tools','Tools',I.tools],['market','Vendors',I.store],['pdm','PDM',I.pdm]].map(([k,l,Ic])=>(
+          <button key={k} className={'tab'+(tab===k?' active':'')} onClick={()=>go(k)}><Ic/><span>{l}</span></button>
+        ))}
+      </div>
+    </Phone>
+  );
+}
+
+function Phone({children}){
+  return (
+    <div className="phone">
+      <div className="notch"></div>
+      <div className="statusbar">
+        <Clock/>
+        <span style={{display:'flex',gap:5,alignItems:'center'}}>
+          <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="#111"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#111"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#111"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#111"/></svg>
+          <svg width="22" height="12" viewBox="0 0 22 12"><rect x="1" y="1" width="18" height="10" rx="2.5" stroke="#111" strokeOpacity=".4" fill="none"/><rect x="2.5" y="2.5" width="13" height="7" rx="1.4" fill="#111"/><rect x="20" y="4" width="1.5" height="4" rx="1" fill="#111" fillOpacity=".4"/></svg>
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function TopBar({inSub,goBack,goHome,logout}){
+  return (
+    <div className="topbar">
+      {inSub
+        ? <button className="tb-back" onClick={goBack}><I.chevL/> Tools</button>
+        : <button className="tb-brand" onClick={goHome}><span className="r">R</span> Broker in a Box</button>}
+      <span className="spacer"></span>
+      <button className="tb-out" onClick={logout}><I.out/> Log out</button>
+    </div>
+  );
+}
+function SignIn({onIn}){
+  const [mode,setMode]=useState('in');
+  const [email,setEmail]=useState('');
+  const [pw,setPw]=useState('');
+  const [name,setName]=useState('');
+  const [show,setShow]=useState(false);
+  const ok = email.trim() && pw.trim() && (mode==='in'||name.trim());
+  return (
+    <div className="signin fade">
+      <div style={{paddingTop:34}}>
+        <div className="logo-lg">R</div>
+        <p className="eyebrow" style={{marginTop:22}}>Broker in a Box · by RocketPro</p>
+        <h1 className="h1" style={{fontSize:28}}>{mode==='in'?'Welcome back.':'Start your shop.'}</h1>
+        <p className="sub">{mode==='in'?'Sign in to pick up your build where you left off.':'Create your account and we will match you with a Partner Development Manager.'}</p>
+      </div>
+
+      <div style={{marginTop:22, display:'flex', flexDirection:'column', gap:14}}>
+        {mode==='up' && <div><label className="lbl">Full name</label><input className="field" value={name} onChange={e=>setName(e.target.value)} placeholder="Jordan Avery"/></div>}
+        <div><label className="lbl">Work email</label><input className="field" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@email.com"/></div>
+        <div>
+          <label className="lbl">Password</label>
+          <div className="pwwrap">
+            <input className="field" type={show?'text':'password'} value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={{paddingRight:44}}/>
+            <button className="pweye" onClick={()=>setShow(s=>!s)} aria-label="Show password">{show?<I.eyeOff/>:<I.eye/>}</button>
+          </div>
+        </div>
+      </div>
+
+      <button className="btn btn-primary" style={{marginTop:20}} disabled={!ok} onClick={()=>ok&&onIn()}>
+        {mode==='in'?'Sign in':'Create account'} <I.chev/>
+      </button>
+
+      <div className="row" style={{margin:'18px 0', gap:12}}>
+        <div style={{flex:1, height:1, background:'var(--line)'}}></div>
+        <span style={{fontSize:11.5, color:'var(--muted)', fontWeight:600}}>or</span>
+        <div style={{flex:1, height:1, background:'var(--line)'}}></div>
+      </div>
+      <button className="btn btn-ghost" onClick={onIn}><I.rocket/> Continue with Rocket ID</button>
+
+      <p style={{textAlign:'center', fontSize:13, color:'var(--muted)', marginTop:20}}>
+        {mode==='in'?"New here? ":"Already have an account? "}
+        <span style={{color:'var(--red)', fontWeight:700, cursor:'pointer'}} onClick={()=>setMode(m=>m==='in'?'up':'in')}>{mode==='in'?'Create one':'Sign in'}</span>
+      </p>
+      <p style={{textAlign:'center', fontSize:11, color:'var(--muted)', marginTop:'auto', paddingTop:18, lineHeight:1.5}}>Prototype — any credentials sign you in. Production uses your Rocket Pro single sign-on.</p>
+    </div>
+  );
+}
+
+/* ---------------- home ---------------- */
+function Ring({pct}){
+  const r=27, c=2*Math.PI*r, off=c*(1-pct/100);
+  return (
+    <div style={{position:'relative',width:64,height:64,flex:'0 0 64px'}}>
+      <svg viewBox="0 0 64 64" style={{transform:'rotate(-90deg)'}}>
+        <circle cx="32" cy="32" r={r} stroke="var(--line2)" strokeWidth="6" fill="none"/>
+        <circle cx="32" cy="32" r={r} stroke="var(--red)" strokeWidth="6" fill="none" strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round" style={{transition:'stroke-dashoffset .6s ease'}}/>
+      </svg>
+      <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+        <b style={{fontSize:17,fontWeight:800,letterSpacing:'-.5px'}}>{pct}%</b>
+        <small style={{fontSize:8,fontWeight:700,color:'var(--muted)',letterSpacing:'.4px',textTransform:'uppercase'}}>Built</small>
+      </div>
+    </div>
+  );
+}
+function Home({pct,cur,go,openTool,openStage}){
+  const quick=[
+    {ic:I.calc,t:'Comp calculator',s:'Model your income',fn:()=>openTool('calc')},
+    {ic:I.pin,t:'Comp by ZIP',s:'Local benchmarks',fn:()=>openTool('zip')},
+    {ic:I.doc,t:'License checklists',s:'Broker & lender',fn:()=>openTool('checklist')},
+    {ic:I.store,t:'Vendor marketplace',s:'Partner offers',fn:()=>go('market')},
+  ];
+  return (
+    <div className="pad fade">
+      <p className="eyebrow" style={{marginTop:16}}>Welcome back, Jordan</p>
+      <h1 className="h1">You're {pct}% of the way to your own shop.</h1>
+
+      <div className="card" style={{padding:16,marginTop:16,display:'flex',alignItems:'center',gap:14}}>
+        <Ring pct={pct}/>
+        <div style={{flex:1}}>
+          <div style={{fontSize:11,fontWeight:700,color:'var(--muted)',letterSpacing:'.3px'}}>UP NEXT</div>
+          <div style={{fontSize:15,fontWeight:800,letterSpacing:'-.3px',marginTop:2}}>{cur.title}</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>{cur.tag}</div>
+        </div>
+      </div>
+      <button className="btn btn-primary" style={{marginTop:13}} onClick={()=>openStage(cur)}>Continue stage {cur.n} <I.chev/></button>
+      <button className="btn btn-ghost" style={{marginTop:9}} onClick={()=>go('map')}>See the full roadmap</button>
+
+      <div className="card" style={{marginTop:16,padding:16,display:'flex',gap:13,alignItems:'center',cursor:'pointer',border:'1px solid var(--red-soft)',background:'var(--red-soft)'}} onClick={()=>openTool('profile')}>
+        <div style={{width:42,height:42,borderRadius:12,background:'var(--red)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flex:'0 0 42px'}}><I.doc/></div>
+        <div style={{flex:1}}><b style={{fontSize:14,fontWeight:800,display:'block'}}>Already have your MU1?</b><small style={{fontSize:12,color:'var(--ink2)'}}>Upload it and we’ll auto-build your profile.</small></div>
+        <I.chev style={{width:18,height:18,color:'var(--red)'}}/>
+      </div>
+
+      <h2 className="h2" style={{marginTop:28}}>Jump back in</h2>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:11,marginTop:12}}>
+        {quick.map((q,i)=>(
+          <div key={i} className="card" style={{padding:14,cursor:'pointer'}} onClick={q.fn}>
+            <div style={{width:38,height:38,borderRadius:11,background:'var(--red-soft)',color:'var(--red)',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10}}><q.ic/></div>
+            <b style={{fontSize:13.5,fontWeight:700,display:'block'}}>{q.t}</b>
+            <small style={{fontSize:11.5,color:'var(--muted)'}}>{q.s}</small>
+          </div>
+        ))}
+      </div>
+
+      <h2 className="h2" style={{marginTop:28}}>Your PDM has your back</h2>
+      <p className="sub" style={{marginBottom:13}}>One person who walks every stage with you, synced to RocketPro.</p>
+      <div className="pdm">
+        <div className="glow"></div>
+        <div className="row" style={{gap:13,position:'relative'}}><Avatar photo={PDM.photo} initials={PDM.initials} size={56}/>
+          <div><div style={{fontSize:15,fontWeight:800}}>{PDM.name}</div><div style={{fontSize:12,opacity:.75}}>Your Partner Development Manager</div></div></div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:7,marginTop:16,position:'relative'}}>
+          <button className="pa" onClick={()=>go('pdm')}><I.phone/>Call</button>
+          <button className="pa" onClick={()=>go('pdm')}><I.chat/>Message</button>
+          <button className="pa" onClick={()=>go('pdm')}><I.cal/>Book</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- roadmap ---------------- */
+function Roadmap({stageStatus,currentIdx,openStage}){
+  return (
+    <div className="pad fade">
+      <p className="eyebrow" style={{marginTop:14}}>The build</p>
+      <h1 className="h1">From licensed to first loan funded.</h1>
+      <p className="sub">Seven stages. Tap any one for the checklist and resources.</p>
+      <div style={{marginTop:18}}>
+        {STAGES.map((s,idx)=>{
+          const st=stageStatus[idx]; const isCur=idx===currentIdx&&!st.c;
+          return (
+            <div key={s.key} className={'stage'+(st.c?' done':'')+(isCur?' current':'')}>
+              <div className="line"></div>
+              <div className="node">{st.c?<I.check style={{width:13,height:13}}/>:s.n}</div>
+              <div className={'scard'+(isCur?' current':'')} onClick={()=>openStage(s)}>
+                <div className="row" style={{gap:8}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:15,fontWeight:800,letterSpacing:'-.3px',display:'flex',alignItems:'center',gap:6}}>{s.title}{s.rocket&&<I.rocket style={{width:14,height:14,color:'var(--red)'}}/>}</div>
+                    <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>{s.tag}</div>
+                  </div>
+                  <I.chev style={{width:17,height:17,color:'var(--line2)'}}/>
+                </div>
+                <div className="row" style={{gap:8,marginTop:10}}>
+                  {st.c?<span className="chip chip-done"><I.check style={{width:12,height:12}}/>Done</span>:isCur?<span className="chip chip-now">In progress · {st.d}/{st.t}</span>:<span className="chip chip-next">{st.d>0?st.d+'/'+st.t:'Not started'}</span>}
+                  <span className="spacer"></span><span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>{s.time}</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+function StageSheet({stage,done,toggle,close,goPDM}){
+  return (
+    <div className="sheet-bg" onClick={close}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <div className="grab"></div>
+        <p className="eyebrow">Stage {stage.n} · {stage.time}</p>
+        <h2 className="h2" style={{fontSize:22,marginTop:4,display:'flex',alignItems:'center',gap:8}}>{stage.title}{stage.rocket&&<I.rocket style={{width:18,height:18,color:'var(--red)'}}/>}</h2>
+        <p className="sub" style={{marginTop:4}}>{stage.tag}</p>
+        <div style={{marginTop:8}}>
+          {stage.tasks.map((t,i)=>{const c=!!done[stage.key+':'+i];return (
+            <div key={i} className={'task'+(c?' checked':'')} onClick={()=>toggle(stage.key,i)}>
+              <div className="check">{c&&<I.check style={{width:14,height:14}}/>}</div>
+              <div><div className="tl">{t.t}</div><div className="td">{t.d}</div></div>
+            </div>);})}
+        </div>
+        <button className="btn btn-primary" style={{marginTop:16}} onClick={goPDM}><I.chat/> Ask Vincent about this stage</button>
+        <button className="btn btn-ghost" style={{marginTop:9}} onClick={close}>Close</button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- tools hub + subviews ---------------- */
+function Tools({view,setView,appliedBps,setAppliedBps,openTool,prof,setProf}){
+  if(view==='calc') return <Calculator back={()=>setView('hub')} appliedBps={appliedBps}/>;
+  if(view==='zip') return <ZipComp back={()=>setView('hub')} useInCalc={(bps)=>{setAppliedBps(bps); setView('calc');}}/>;
+  if(view==='nmls') return <NmlsResources back={()=>setView('hub')}/>;
+  if(view==='checklist') return <Checklists back={()=>setView('hub')}/>;
+  if(view==='training') return <Training back={()=>setView('hub')}/>;
+  if(view==='profile') return <Profile prof={prof} setProf={setProf}/>;
+  const items=[
+    {ic:I.pdm,t:'Your profile',s:'Upload your MU1 to auto-fill',v:'profile'},
+    {ic:I.calc,t:'Compensation estimator',s:'Model monthly and annual income',v:'calc'},
+    {ic:I.pin,t:'Average comp by ZIP',s:'Local broker comp benchmarks',v:'zip'},
+    {ic:I.doc,t:'License checklists',s:'Wholesale & correspondent, by state',v:'checklist'},
+    {ic:I.book,t:'NMLS resources',s:'Official guides and forms',v:'nmls'},
+    {ic:I.play,t:'Training library',s:'Walkthroughs and courses',v:'training'},
+  ];
+  return (
+    <div className="pad fade">
+      <p className="eyebrow" style={{marginTop:16}}>Tools & resources</p>
+      <h1 className="h1">Everything to get open.</h1>
+      <div className="card" style={{marginTop:18,overflow:'hidden'}}>
+        {items.map((it,i)=>(
+          <div key={i} className="lrow" onClick={()=>setView(it.v)}>
+            <div className="ic" style={{background:'var(--red-soft)',color:'var(--red)'}}><it.ic/></div>
+            <div style={{flex:1}}><b>{it.t}</b><small>{it.s}</small></div>
+            <I.chev style={{width:18,height:18,color:'var(--line2)'}}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Sub({back,title,sub,children}){
+  return (
+    <div className="pad fade">
+      <h1 className="h1" style={{fontSize:24,marginTop:14}}>{title}</h1>
+      {sub&&<p className="sub">{sub}</p>}
+      {children}
+    </div>
+  );
+}
+
+/* ----- calculator ----- */
+function Calculator({back,appliedBps}){
+  const [loan,setLoan]=useState(360000);
+  const [units,setUnits]=useState(6);
+  const [bps,setBps]=useState(appliedBps||200);
+  const [oh,setOh]=useState(0);
+  useEffect(()=>{ if(appliedBps) setBps(appliedBps); },[appliedBps]);
+
+  const perLoan = loan*bps/10000;
+  const grossM = perLoan*units;
+  const netM = grossM-oh;
+  const grossY = grossM*12;
+  const netY = netM*12;
+
+  return (
+    <Sub back={back} title="Compensation estimator" sub="A quick income model. Gross of taxes and any splits — an estimate, not a guarantee.">
+      <div className="card" style={{padding:16,marginTop:16}}>
+        <SliderRow label="Average loan amount" value={money(loan)} min={100000} max={900000} step={10000} val={loan} set={setLoan}/>
+        <SliderRow label="Loans per month" value={units} min={1} max={40} step={1} val={units} set={setUnits}/>
+        <SliderRow label="Broker comp" value={(bps/100).toFixed(2)+'% · '+bps+' bps'} min={50} max={300} step={5} val={bps} set={setBps}/>
+        <SliderRow label="Monthly overhead" value={money(oh)} min={0} max={40000} step={500} val={oh} set={setOh} last/>
+      </div>
+
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:11,marginTop:14}}>
+        <div className="stat"><div className="k">Per loan</div><div className="v">{money(perLoan)}</div></div>
+        <div className="stat"><div className="k">Gross / month</div><div className="v">{money(grossM)}</div></div>
+      </div>
+      <div className="card" style={{marginTop:11,padding:16,background:'var(--ink)',color:'#fff',border:'none'}}>
+        <div className="row"><div style={{flex:1}}><div style={{fontSize:11.5,fontWeight:700,opacity:.7,textTransform:'uppercase',letterSpacing:'.3px'}}>Net annual income</div><div style={{fontSize:30,fontWeight:800,letterSpacing:'-.8px',marginTop:2,color:netY<0?'#FF7A5C':'#fff'}}>{money(netY)}</div></div>
+        <div style={{textAlign:'right'}}><div style={{fontSize:11,opacity:.65}}>Gross / yr</div><div style={{fontSize:15,fontWeight:700}}>{money(grossY)}</div></div></div>
+      </div>
+      <p style={{fontSize:11.5,color:'var(--muted)',marginTop:12,lineHeight:1.5}}>Tip: pull a real comp benchmark for your area from Average comp by ZIP, then bring it back here.</p>
+    </Sub>
+  );
+}
+function SliderRow({label,value,min,max,step,val,set,last}){
+  return (
+    <div style={{paddingBottom:last?0:14,marginBottom:last?0:14,borderBottom:last?'none':'1px solid var(--line)'}}>
+      <div className="row"><span className="lbl" style={{margin:0}}>{label}</span><span className="spacer"></span><span style={{fontSize:14,fontWeight:800}}>{value}</span></div>
+      <input type="range" min={min} max={max} step={step} value={val} onChange={e=>set(Number(e.target.value))}/>
+    </div>
+  );
+}
+
+/* ----- comp by ZIP ----- */
+function ZipComp({back,useInCalc}){
+  const [zip,setZip]=useState('');
+  const [st,setSt]=useState('');
+  const [res,setRes]=useState(null);
+  const nat=COMP.nat;
+
+  const lookupZip=()=>{
+    const z=(zip.match(/\d/g)||[]).join('').slice(0,5);
+    if(z.length<5){ setRes({err:'Enter a 5-digit ZIP code.'}); return; }
+    if(COMP.ezip[z]){ const e=COMP.ezip[z]; setRes({scope:'ZIP '+z, exact:true, ...e}); return; }
+    const z3=z.slice(0,3);
+    if(COMP.zip3[z3]){ const e=COMP.zip3[z3]; setRes({scope:'ZIP area '+z3+'xx', ...e}); return; }
+    setRes({err:'No partner shops on file for that ZIP yet. Try a state below.'});
+  };
+  const lookupState=(s)=>{ setSt(s); if(s&&COMP.state[s]){ const e=COMP.state[s]; setRes({scope:s+' statewide', ...e}); } };
+
+  const states=Object.keys(COMP.state).sort();
+  const delta = res&&!res.err ? (res.avgComp-nat.avgComp) : 0;
+
+  return (
+    <Sub back={back} title="Average comp by ZIP" sub="Typical broker comp on Rocket Pro partner shops near you. National average is 2.10%.">
+      <div className="card" style={{padding:16,marginTop:16}}>
+        <label className="lbl">ZIP code</label>
+        <div className="row" style={{gap:9}}>
+          <input className="field" inputMode="numeric" value={zip} onChange={e=>setZip(e.target.value)} placeholder="e.g. 48226" style={{flex:1}}/>
+          <button className="btn btn-primary" style={{width:'auto',padding:'14px 18px'}} onClick={lookupZip}>Look up</button>
+        </div>
+        <div className="row" style={{gap:9,marginTop:12}}>
+          <span className="lbl" style={{margin:0,whiteSpace:'nowrap'}}>Or by state</span>
+          <select className="field" value={st} onChange={e=>lookupState(e.target.value)} style={{flex:1}}>
+            <option value="">Select…</option>
+            {states.map(s=><option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {res && (res.err ? (
+        <div className="card" style={{padding:16,marginTop:14,color:'var(--ink2)',fontSize:13.5}}>{res.err}</div>
+      ) : (
+        <div className="fade">
+          <div className="card" style={{padding:18,marginTop:14}}>
+            <div className="row"><span className="chip chip-now"><I.pin style={{width:12,height:12}}/>{res.scope}{res.st?' · '+res.st:''}</span><span className="spacer"></span><span style={{fontSize:11,color:'var(--muted)',fontWeight:600}}>n={res.n} shops</span></div>
+            <div style={{display:'flex',alignItems:'baseline',gap:8,marginTop:14}}>
+              <div style={{fontSize:42,fontWeight:800,letterSpacing:'-1.4px'}}>{pctFmt(res.avgComp)}</div>
+              <div style={{fontSize:14,color:'var(--muted)',fontWeight:700}}>{Math.round(res.avgComp*100)} bps avg</div>
+            </div>
+            <div className="row" style={{gap:8,marginTop:6}}>
+              <span style={{fontSize:13,fontWeight:700,color:delta>=0?'var(--ok)':'var(--red)'}}>{delta>=0?'▲':'▼'} {Math.abs(delta*100).toFixed(0)} bps vs national</span>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:11,marginTop:16}}>
+              <div className="stat"><div className="k">Avg monthly units</div><div className="v" style={{fontSize:20}}>{res.avgUnits!=null?res.avgUnits:'—'}</div></div>
+              <div className="stat"><div className="k">National avg</div><div className="v" style={{fontSize:20}}>{pctFmt(nat.avgComp)}</div></div>
+            </div>
+          </div>
+          <button className="btn btn-dark" style={{marginTop:12}} onClick={()=>useInCalc(Math.round(res.avgComp*100))}><I.calc/> Use {Math.round(res.avgComp*100)} bps in the calculator</button>
+        </div>
+      ))}
+      <p style={{fontSize:11,color:'var(--muted)',marginTop:16,lineHeight:1.5}}>Source: Rocket Pro partner comp data as of {DATA_AS_OF}, aggregated across {nat.n.toLocaleString('en-US')} shops. Production refreshes from live Salesforce and Model Match data.</p>
+    </Sub>
+  );
+}
+
+/* ----- NMLS resources ----- */
+function NmlsResources({back}){
+  return (
+    <Sub back={back} title="NMLS resources" sub="Official guidance straight from the Nationwide Multistate Licensing System.">
+      <div className="card" style={{marginTop:16,overflow:'hidden'}}>
+        {NMLS.map((r,i)=>(
+          <a key={i} className="lrow" href={r.url} target="_blank" rel="noopener noreferrer">
+            <div className="ic"><r.ic/></div>
+            <div style={{flex:1}}><b>{r.t}</b><small>{r.d}</small></div>
+            <I.ext style={{width:17,height:17,color:'var(--line2)'}}/>
+          </a>
+        ))}
+      </div>
+    </Sub>
+  );
+}
+
+/* ----- checklists ----- */
+function Checklists({back}){
+  const [type,setType]=useState('wholesale');
+  const [done,setDone]=useState({});
+  const [states,setStates]=useState([]);
+  const list=CHECKLISTS[type];
+  const ch=CHANNELS[type];
+  const n=list.filter((_,i)=>done[type+':'+i]).length;
+  const stName=(ab)=>{const f=US_STATES.find(s=>s[0]===ab); return f?f[1]:ab;};
+  const add=(v)=>{ if(v && !states.includes(v)) setStates([...states,v].sort()); };
+  const remove=(v)=>setStates(states.filter(s=>s!==v));
+  return (
+    <Sub back={back} title="License checklists" sub="Pick your channel and the states you’ll work in. Each one links to the exact, current checklist on NMLS.">
+      <div className="seg" style={{marginTop:16}}>
+        <button className={type==='wholesale'?'on':''} onClick={()=>setType('wholesale')}>Wholesale (Broker)</button>
+        <button className={type==='correspondent'?'on':''} onClick={()=>setType('correspondent')}>Correspondent (Lender)</button>
+      </div>
+
+      <div className="card" style={{marginTop:13,padding:15}}>
+        <div className="row" style={{gap:8}}><span style={{fontSize:14,fontWeight:800}}>{ch.label}</span><span className="spacer"></span><span className="sfmap">{ch.license}</span></div>
+        <p style={{fontSize:12.5,color:'var(--ink2)',lineHeight:1.5,margin:'8px 0 0'}}>{ch.def}</p>
+      </div>
+
+      <div style={{marginTop:16}}>
+        <label className="lbl">States you’ll lend in</label>
+        <select className="field" value="" onChange={e=>add(e.target.value)}>
+          <option value="">Add a state…</option>
+          {US_STATES.filter(s=>!states.includes(s[0])).map(s=><option key={s[0]} value={s[0]}>{s[1]}</option>)}
+        </select>
+        {states.length>0 && (
+          <div style={{display:'flex',flexWrap:'wrap',gap:7,marginTop:10}}>
+            {states.map(ab=>(
+              <span key={ab} className="stchip">{ab}<button onClick={()=>remove(ab)} aria-label={'Remove '+ab}><I.x/></button></span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {states.length===0 ? (
+        <div className="card" style={{marginTop:12,padding:'14px 15px',fontSize:12.5,color:'var(--muted)',lineHeight:1.5}}>Add the states you plan to work in to pull each state’s official {ch.short.toLowerCase()} checklist from NMLS.</div>
+      ) : (
+        <div style={{marginTop:14}}>
+          <div style={{fontSize:12,fontWeight:800,color:'var(--muted)',letterSpacing:'.3px',marginBottom:8}}>OFFICIAL NMLS CHECKLISTS</div>
+          <div className="card" style={{overflow:'hidden'}}>
+            {states.map(ab=>(
+              <a key={ab} className="lrow" href={COMPILER} target="_blank" rel="noopener noreferrer">
+                <div className="ic" style={{background:'var(--red-soft)',color:'var(--red)',fontWeight:800,fontSize:13}}>{ab}</div>
+                <div style={{flex:1}}><b>{stName(ab)}</b><small>{ch.license}</small></div>
+                <I.ext style={{width:17,height:17,color:'var(--line2)'}}/>
+              </a>
+            ))}
+          </div>
+          <p style={{fontSize:11,color:'var(--muted)',marginTop:9,lineHeight:1.5}}>Opens the NMLS Checklist Compiler — choose the state and “{ch.license}” to generate its exact requirements, bond amount, and fees.</p>
+        </div>
+      )}
+
+      <div className="row" style={{marginTop:20}}>
+        <span style={{fontSize:13,fontWeight:800}}>Standard requirements</span><span className="spacer"></span>
+        <span style={{fontSize:12,color:'var(--muted)',fontWeight:600}}>{n}/{list.length}</span>
+      </div>
+      <p style={{fontSize:11.5,color:'var(--muted)',margin:'3px 0 0'}}>Every state builds on these — check them off as you go.</p>
+      <div style={{height:6,borderRadius:4,background:'var(--line2)',marginTop:10,overflow:'hidden'}}>
+        <div style={{height:'100%',width:(n/list.length*100)+'%',background:'var(--red)',transition:'width .3s'}}></div>
+      </div>
+      <div className="card" style={{marginTop:12,padding:'6px 16px'}}>
+        {list.map((it,i)=>{const c=!!done[type+':'+i];return (
+          <div key={i} className={'task'+(c?' checked':'')} style={{borderBottom:i<list.length-1?'1px solid var(--line)':'none'}} onClick={()=>setDone(p=>({...p,[type+':'+i]:!p[type+':'+i]}))}>
+            <div className="check">{c&&<I.check style={{width:14,height:14}}/>}</div>
+            <div><div className="tl">{it.t}</div><div className="td">{it.d}</div></div>
+          </div>);})}
+      </div>
+      <a className="btn btn-primary" style={{marginTop:14,textDecoration:'none'}} href={COMPILER} target="_blank" rel="noopener noreferrer"><I.ext/> Open the NMLS Checklist Compiler</a>
+    </Sub>
+  );
+}
+
+/* ----- training ----- */
+function Training({back}){
+  const lib=[
+    {t:'Build a Broker journey',d:'Podcast · National Mortgage Professional',ic:I.mic,u:'https://nationalmortgageprofessional.com/podcasts/build-broker-journey'},
+    {t:'Rocket Pro on YouTube',d:'Stay up to date with everything Rocket Pro',ic:I.yt,u:'https://www.youtube.com/@RocketPro'},
+    {t:'Going independent: the real math',d:'8 min · getting started',ic:I.play},
+    {t:'How to read a wholesale rate sheet',d:'11 min · operations',ic:I.play},
+    {t:'Walk your MU1, field by field',d:'18 min · licensing',ic:I.play},
+    {t:'Rocket Pro University',d:'Full course catalog',ic:I.rocket,u:'https://university.rocketpro.com/learn?utm_source=storefront&utm_medium=other&utm_campaign=vendormarketplace&utm_content=rocket_pro_university&utm_audience=partner'},
+    {t:'OnCourse Learning · pre-licensing & CE',d:'NMLS-approved coursework',ic:I.book,u:'https://partners.oncourselearning.com/mortgage/rocketprotpo?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=oncourse_learning&utm_audience=partner'},
+  ];
+  return (
+    <Sub back={back} title="Training library" sub="Walkthroughs from the people who do this every day.">
+      <div className="card" style={{marginTop:16,overflow:'hidden'}}>
+        {lib.map((l,i)=> l.u ? (
+          <a key={i} className="lrow" href={l.u} target="_blank" rel="noopener noreferrer"><div className="ic" style={{background:'var(--red-soft)',color:'var(--red)'}}><l.ic/></div><div style={{flex:1}}><b>{l.t}</b><small>{l.d}</small></div><I.ext style={{width:17,height:17,color:'var(--line2)'}}/></a>
+        ) : (
+          <div key={i} className="lrow"><div className="ic"><l.ic/></div><div style={{flex:1}}><b>{l.t}</b><small>{l.d}</small></div><I.chev style={{width:17,height:17,color:'var(--line2)'}}/></div>
+        ))}
+      </div>
+    </Sub>
+  );
+}
+
+/* ----- candidate profile from MU1 ----- */
+const PROF_FIELDS = [
+  {k:'company', label:'Company legal name', sf:'Account Name', ph:'Acme Mortgage LLC'},
+  {k:'nmls', label:'NMLS company ID', sf:'NMLS_ID__c', ph:'1234567'},
+  {k:'entity', label:'Entity type', sf:'Entity_Type__c', ph:'LLC'},
+  {k:'ein', label:'EIN', sf:'Tax_ID__c', ph:'12-3456789'},
+  {k:'qi', label:'Qualifying individual', sf:'Qualifying_Individual__c', ph:'Full name'},
+  {k:'contact', label:'Primary contact', sf:'Contact', ph:'Full name'},
+  {k:'email', label:'Email', sf:'Email', ph:'you@email.com'},
+  {k:'phone', label:'Phone', sf:'Phone', ph:'(313) 555-0123'},
+  {k:'address', label:'Business address', sf:'Billing Address', ph:'Street, City, ST'},
+  {k:'states', label:'Licensed state(s)', sf:'Licensed_States__c', ph:'MI, OH, IN'},
+];
+function parseMU1(text){
+  const f={}; if(!text) return f;
+  const t=text.replace(/\s+/g,' ');
+  const grab=(re)=>{const m=t.match(re); return m?m[1].trim():'';};
+  const nmls=grab(/NMLS\s*(?:Unique\s*)?(?:ID|Identifier|#)?[:\s]*?(\d{4,8})/i); if(nmls) f.nmls=nmls;
+  const ein=grab(/\b(\d{2}-\d{7})\b/); if(ein) f.ein=ein;
+  const email=grab(/([\w.+-]+@[\w-]+\.[\w.-]+)/); if(email) f.email=email;
+  const phone=grab(/(\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4})/); if(phone) f.phone=phone;
+  const company=grab(/(?:Company\s*)?Legal\s*Name[:\s]+([A-Za-z0-9 ,.&'\-]{3,60}?)(?:\s{2}|NMLS|EIN|Entity|$)/i); if(company) f.company=company;
+  const entity=grab(/\b(Limited Liability Company|LLC|S[- ]?Corp(?:oration)?|C[- ]?Corp(?:oration)?|Corporation|Partnership|Sole Proprietor(?:ship)?)\b/i); if(entity) f.entity=entity;
+  const qi=grab(/(?:Qualifying Individual|Designated (?:Broker|Individual))[:\s]+([A-Za-z .,'\-]{3,50}?)(?:\s{2}|NMLS|$)/i); if(qi) f.qi=qi;
+  const states=grab(/(?:State[s]? of (?:Operation|Formation|Incorporation)|Licensed States?)[:\s]+([A-Z]{2}(?:\s*,\s*[A-Z]{2}){0,12})/); if(states) f.states=states;
+  return f;
+}
+function Profile({prof,setProf}){
+  const [busy,setBusy]=useState(false);
+  const [note,setNote]=useState('');
+  const set=(k,v)=>setProf(p=>({...p,fields:{...p.fields,[k]:v},saved:false}));
+  const onFile=async(e)=>{
+    const file=e.target.files&&e.target.files[0]; if(!file) return;
+    setBusy(true); setProf(p=>({...p,fileName:file.name})); setNote('Reading '+file.name+'…');
+    try{
+      let text='';
+      if(file.type==='application/pdf' && typeof pdfjsLib!=='undefined'){
+        const buf=await file.arrayBuffer();
+        const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();text+=c.items.map(x=>x.str).join(' ')+'\n';}
+      }
+      const found=parseMU1(text); const keys=Object.keys(found);
+      setProf(p=>({...p,fileName:file.name,fields:{...p.fields,...found},auto:keys,saved:false}));
+      setNote(keys.length? ('Auto-filled '+keys.length+' field'+(keys.length>1?'s':'')+' from your MU1 — confirm and edit below.') : (file.type==='application/pdf'?'Uploaded, but we couldn’t read fields automatically. Fill them in below.':'Please upload the MU1 as a PDF to auto-fill.'));
+    }catch(err){ setNote('Could not read that file automatically. You can still fill the profile manually.'); }
+    setBusy(false);
+  };
+  const filled = PROF_FIELDS.filter(x=>prof.fields[x.k]).length;
+  return (
+    <Sub back={null} title="Your profile" sub="Upload your NMLS MU1 and we’ll build your candidate profile — the same fields that sync to RocketPro Salesforce.">
+      <label className="dropzone">
+        <input type="file" accept="application/pdf" onChange={onFile} style={{display:'none'}}/>
+        <div className="dz-ic"><I.doc/></div>
+        <b>{prof.fileName?prof.fileName:'Upload your MU1 (PDF)'}</b>
+        <small>{prof.fileName?'Tap to replace':'Tap to choose a file'}</small>
+      </label>
+      {note && <div className="card" style={{padding:'12px 14px',marginTop:12,fontSize:13,color:'var(--ink2)',display:'flex',gap:9,alignItems:'center'}}>{busy?<span className="spin"></span>:<I.spark style={{width:18,height:18,color:'var(--red)',flex:'0 0 18px'}}/>}<span>{note}</span></div>}
+
+      <div className="row" style={{marginTop:18,marginBottom:4}}><span style={{fontSize:13,fontWeight:800}}>Candidate profile</span><span className="spacer"></span><span style={{fontSize:11.5,color:'var(--muted)',fontWeight:600}}>{filled}/{PROF_FIELDS.length} complete</span></div>
+      {PROF_FIELDS.map(x=>(
+        <div key={x.k} style={{marginTop:12}}>
+          <div className="row"><label className="lbl" style={{margin:0}}>{x.label}</label>{prof.auto.includes(x.k)&&<span className="autochip"><I.spark style={{width:11,height:11}}/>From MU1</span>}<span className="spacer"></span><span className="sfmap">{x.sf}</span></div>
+          <input className="field" value={prof.fields[x.k]||''} placeholder={x.ph} onChange={e=>set(x.k,e.target.value)} style={{marginTop:6}}/>
+        </div>
+      ))}
+
+      {prof.saved ? (
+        <div className="card" style={{marginTop:16,padding:15,background:'#E8F5EE',border:'1px solid #BFE6CF'}}>
+          <div style={{display:'flex',gap:9,alignItems:'center'}}><I.check style={{width:18,height:18,color:'var(--ok)'}}/><b style={{fontSize:14,color:'#0F6E3E'}}>Profile saved · ready to sync</b></div>
+          <p style={{fontSize:12,color:'#2C6B47',margin:'7px 0 0',lineHeight:1.5}}>These fields map 1:1 to your RocketPro Salesforce record. Sync is simulated in this prototype.</p>
+        </div>
+      ) : (
+        <button className="btn btn-primary" style={{marginTop:16}} onClick={()=>setProf(p=>({...p,saved:true}))}><I.check/> Save profile</button>
+      )}
+      <p style={{fontSize:11,color:'var(--muted)',marginTop:12,lineHeight:1.5}}>Reading happens on your device. We pull what we can from the MU1; always confirm before saving. Production maps these straight into Salesforce so your PDM sees them instantly.</p>
+    </Sub>
+  );
+}
+
+/* ---------------- vendor marketplace ---------------- */
+function Market(){
+  const [cat,setCat]=useState('All');
+  const list = cat==='All'?VENDORS:VENDORS.filter(v=>v.cat===cat);
+  return (
+    <div className="pad fade">
+      <p className="eyebrow" style={{marginTop:16}}>Marketplace</p>
+      <h1 className="h1">Your partner offers.</h1>
+      <p className="sub">Vendors with built-in Rocket Pro pricing — wired in the moment you partner.</p>
+      <div className="vcats">
+        {VCATS.map(c=><button key={c} className={'vcat'+(cat===c?' on':'')} onClick={()=>setCat(c)}>{c}</button>)}
+      </div>
+      <div style={{marginTop:6}}>
+        {list.map((v,i)=>(
+          <a key={i} className="vcard" href={v.u} target="_blank" rel="noopener noreferrer">
+            <div className="logo"><v.ic/></div>
+            <div style={{flex:1}}><div className="cat">{v.cat}</div><b>{v.n}</b><p>{v.d}</p></div>
+            <span className="ext"><I.ext/></span>
+          </a>
+        ))}
+      </div>
+      <p style={{textAlign:'center',fontSize:11,color:'var(--muted)',marginTop:8,lineHeight:1.5}}>{VENDORS.length} partners · opens the vendor's Rocket Pro offer page</p>
+    </div>
+  );
+}
+
+/* ---------------- PDM ---------------- */
+function Connect(){
+  return (
+    <div className="pad fade">
+      <div className="row" style={{marginTop:16,marginBottom:13}}>
+        <p className="eyebrow" style={{margin:0}}>Your PDM</p><span className="spacer"></span>
+        <span className="synced"><I.check style={{width:12,height:12}}/>Synced with Salesforce</span>
+      </div>
+      <div className="pdm">
+        <div className="glow"></div>
+        <div className="row" style={{gap:14,position:'relative'}}><Avatar photo={PDM.photo} initials={PDM.initials} size={64}/>
+          <div><div style={{fontSize:19,fontWeight:800}}>{PDM.name}</div><div style={{fontSize:12.5,opacity:.78}}>{PDM.title}</div><div style={{fontSize:11.5,opacity:.6,marginTop:3}}>{PDM.loc}</div></div></div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:7,marginTop:16,position:'relative'}}>
+          <a className="pa" href={'tel:+'+PDM.phone}><I.phone/>Call</a>
+          <a className="pa" href={'sms:+'+PDM.phone}><I.chat/>Text</a>
+          <a className="pa" href={'mailto:'+PDM.email}><I.mail/>Email</a>
+        </div>
+      </div>
+      <a className="btn btn-dark" style={{marginTop:12,textDecoration:'none'}} href={PDM.linkedin} target="_blank" rel="noopener noreferrer"><I.li/> Connect with {PDM.name.split(' ')[0]} on LinkedIn</a>
+
+      <div className="card" style={{marginTop:12,overflow:'hidden'}}>
+        <a className="lrow" href={'tel:+'+PDM.phone}><div className="ic"><I.phone/></div><div style={{flex:1}}><b>{PDM.phoneDisplay}</b><small>Call or text</small></div><I.chev style={{width:17,height:17,color:'var(--line2)'}}/></a>
+        <a className="lrow" href={'mailto:'+PDM.email}><div className="ic"><I.mail/></div><div style={{flex:1}}><b style={{fontSize:13,wordBreak:'break-all'}}>{PDM.email}</b><small>Email</small></div><I.chev style={{width:17,height:17,color:'var(--line2)'}}/></a>
+        <a className="lrow" href={PDM.linkedin} target="_blank" rel="noopener noreferrer"><div className="ic"><I.li/></div><div style={{flex:1}}><b>LinkedIn</b><small>Connect with {PDM.name.split(' ')[0]}</small></div><I.ext style={{width:17,height:17,color:'var(--line2)'}}/></a>
+      </div>
+
+      <div className="card" style={{marginTop:14,padding:15}}>
+        <div className="row" style={{gap:10}}><div style={{fontSize:12,fontWeight:800,color:'var(--muted)',letterSpacing:'.3px'}}>YOUR APPLICATION</div><span className="spacer"></span><span className="chip chip-now">Stage 4 of 7</span></div>
+        <p style={{fontSize:13,color:'var(--ink2)',lineHeight:1.5,margin:'9px 0 0'}}>{PDM.name.split(' ')[0]} sees exactly where you are in the build and picks up right where you left off, no re-explaining.</p>
+      </div>
+      <h2 className="h2" style={{marginTop:22}}>Recent</h2>
+      <div style={{display:'flex',gap:9,marginTop:13}}>
+        <Avatar photo={PDM.photo} initials={PDM.initials} size={32}/>
+        <div style={{background:'var(--mist)',borderRadius:'4px 14px 14px 14px',padding:'10px 13px',fontSize:13,lineHeight:1.45,maxWidth:'80%'}}>Nice work clearing your SAFE exam, Jordan. Whenever you're ready, let's screen-share and walk your MU1 together. I'll block 30 min this week.</div>
+      </div>
+      <div style={{display:'flex',gap:9,marginTop:13,flexDirection:'row-reverse'}}>
+        <div className="av" style={{width:32,height:32,flex:'0 0 32px',fontSize:12,background:'var(--mist)',color:'var(--ink)'}}>J</div>
+        <div style={{background:'var(--red)',color:'#fff',borderRadius:'14px 4px 14px 14px',padding:'10px 13px',fontSize:13,lineHeight:1.45,maxWidth:'80%'}}>Perfect, Thursday afternoon works for me.</div>
+      </div>
+      <a className="btn btn-primary" style={{marginTop:18,textDecoration:'none'}} href={'mailto:'+PDM.email+'?subject=MU1%20walkthrough%20request'}><I.cal/> Book your MU1 walkthrough</a>
+      <p style={{textAlign:'center',fontSize:11,color:'var(--muted)',marginTop:12,lineHeight:1.5}}>Prototype · pipeline messages are mocked. Production pulls live from RocketPro Salesforce.</p>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
