@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Broker in a Box — Rocket Pro</title>
+<meta name="description" content="Go from licensed to your first funded loan, with a Rocket Pro partner the whole way."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --red:#E5401E; --red-press:#C5331A; --red-soft:#FCEDE8;
+    --ink:#16161A; --ink2:#45454D; --muted:#76767E;
+    --bg:#fff; --soft:#F6F5F3; --soft2:#EFEDE8; --line:#E9E6E1; --line2:#DEDAD3;
+    --ok:#1E8E5A; --maxw:1200px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; font-family:'Inter',system-ui,sans-serif; color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased;}
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+  h1,h2,h3{margin:0; letter-spacing:-.025em; font-weight:800; line-height:1.05;}
+  h1{font-size:clamp(38px,5.2vw,68px); font-weight:900;}
+  h2{font-size:clamp(28px,3.4vw,44px);}
+  p{margin:0; line-height:1.6;}
+  .eyebrow{font-size:12px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--red);}
+  .muted{color:var(--muted);}
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:9px; font-family:inherit; font-weight:700; font-size:16px; border:0; border-radius:999px; padding:15px 26px; cursor:pointer; transition:transform .12s, background .15s; white-space:nowrap;}
+  .btn:active{transform:scale(.98);}
+  .btn-red{background:var(--red); color:#fff;}
+  .btn-red:hover{background:var(--red-press);}
+  .btn-dark{background:var(--ink); color:#fff;}
+  .btn-ghost{background:transparent; color:var(--ink); border:1.5px solid var(--line2);}
+  .btn-ghost:hover{border-color:var(--ink); background:var(--soft);}
+  .btn-white{background:#fff; color:var(--ink);}
+  .btn svg{width:18px; height:18px;}
+
+  /* announcement */
+  .announce{background:var(--ink); color:#fff; font-size:13.5px; font-weight:500;}
+  .announce .wrap{display:flex; align-items:center; justify-content:center; gap:10px; padding:11px 28px; text-align:center;}
+  .announce a{color:#fff; font-weight:800; text-decoration:underline; text-underline-offset:3px; white-space:nowrap;}
+  .announce .dot{width:7px; height:7px; border-radius:50%; background:var(--red); flex:0 0 7px;}
+
+  /* nav */
+  header{position:sticky; top:0; z-index:50; background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(12px); border-bottom:1px solid var(--line);}
+  .nav{display:flex; align-items:center; gap:28px; padding:16px 28px; max-width:var(--maxw); margin:0 auto;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:900; font-size:19px; letter-spacing:-.02em;}
+  .mark{width:30px; height:30px; border-radius:9px; background:var(--red); display:flex; align-items:center; justify-content:center; flex:0 0 30px;}
+  .mark svg{width:18px; height:18px; color:#fff;}
+  .navlinks{display:flex; gap:26px; margin-left:14px;}
+  .navlinks a{font-size:15px; font-weight:600; color:var(--ink2);}
+  .navlinks a:hover{color:var(--red);}
+  .nav .spacer{flex:1;}
+  .navcta{display:flex; align-items:center; gap:12px;}
+  .navcta .signin{font-size:15px; font-weight:700;}
+  .navcta .signin:hover{color:var(--red);}
+  .burger{display:none; background:none; border:0; cursor:pointer; padding:6px;}
+  .burger svg{width:26px; height:26px;}
+  .mobile-menu{display:none; flex-direction:column; gap:4px; padding:8px 18px 18px; border-bottom:1px solid var(--line); background:#fff;}
+  .mobile-menu a{padding:12px 8px; font-weight:700; font-size:16px; border-bottom:1px solid var(--soft);}
+
+  /* hero */
+  .hero{padding:72px 0 64px; background:linear-gradient(180deg,#fff 0%, var(--soft) 100%);}
+  .hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:54px; align-items:center;}
+  .hero h1{margin-top:18px;}
+  .hero .lead{font-size:clamp(17px,1.5vw,20px); color:var(--ink2); margin-top:22px; max-width:540px;}
+  .hero .cta{display:flex; gap:14px; margin-top:30px; flex-wrap:wrap;}
+  .hero .reassure{display:flex; align-items:center; gap:9px; margin-top:22px; font-size:14px; color:var(--muted); font-weight:600;}
+  .hero .reassure svg{width:18px; height:18px; color:var(--ok);}
+
+  /* roadmap card visual */
+  .rmcard{background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:0 2px 4px rgba(0,0,0,.03), 0 30px 60px rgba(0,0,0,.09); padding:26px 26px 22px;}
+  .rmcard .top{display:flex; align-items:center; gap:12px; margin-bottom:6px;}
+  .rmprog{height:7px; background:var(--soft2); border-radius:5px; overflow:hidden; margin:14px 0 20px;}
+  .rmprog div{height:100%; width:43%; background:var(--red); border-radius:5px;}
+  .rmstage{display:flex; align-items:center; gap:13px; padding:9px 0;}
+  .rmnode{width:26px; height:26px; border-radius:50%; flex:0 0 26px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; background:var(--soft); color:var(--muted);}
+  .rmstage.done .rmnode{background:var(--red); color:#fff;}
+  .rmstage.now .rmnode{border:2px solid var(--red); color:var(--red); background:var(--red-soft);}
+  .rmstage b{font-size:14.5px; font-weight:700;}
+  .rmstage.done b{color:var(--muted); text-decoration:line-through;}
+  .rmstage small{display:block; font-size:12px; color:var(--muted); font-weight:500;}
+
+  /* trust band */
+  .trust{border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:#fff;}
+  .trust .wrap{display:grid; grid-template-columns:repeat(4,1fr); gap:24px; padding:36px 28px;}
+  .trust .v{font-size:30px; font-weight:900; letter-spacing:-.03em;}
+  .trust .k{font-size:14px; color:var(--muted); font-weight:600; margin-top:4px; line-height:1.4;}
+
+  section.block{padding:84px 0;}
+  .sechead{max-width:720px;}
+  .sechead h2{margin-top:14px;}
+  .sechead p{margin-top:16px; font-size:18px; color:var(--ink2);}
+
+  /* journey */
+  .stages{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-top:44px;}
+  .stage{background:var(--soft); border-radius:18px; padding:22px; position:relative; overflow:hidden;}
+  .stage .num{font-size:13px; font-weight:900; color:var(--red); letter-spacing:.05em;}
+  .stage h3{font-size:18px; margin-top:10px;}
+  .stage p{font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.5;}
+  .stage.rocket{background:var(--ink); color:#fff;}
+  .stage.rocket p{color:rgba(255,255,255,.78);}
+  .stage.rocket .num{color:#fff;}
+
+  /* tools */
+  .tools-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:28px; margin-top:44px; align-items:start;}
+  .toolcards{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .toolcard{background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px;}
+  .toolcard .ic{width:46px; height:46px; border-radius:13px; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center; margin-bottom:14px;}
+  .toolcard .ic svg{width:23px; height:23px;}
+  .toolcard h3{font-size:17px;}
+  .toolcard p{font-size:13.5px; color:var(--ink2); margin-top:7px; line-height:1.5;}
+
+  .calc{background:var(--ink); color:#fff; border-radius:22px; padding:28px;}
+  .calc h3{font-size:20px;}
+  .calc .sub{font-size:14px; color:rgba(255,255,255,.7); margin-top:6px;}
+  .calc .crow{margin-top:20px;}
+  .calc .clabel{display:flex; justify-content:space-between; font-size:13.5px; font-weight:600; color:rgba(255,255,255,.85);}
+  .calc .clabel b{color:#fff; font-weight:800;}
+  .calc input[type=range]{-webkit-appearance:none; width:100%; height:5px; border-radius:4px; background:rgba(255,255,255,.2); outline:none; margin-top:10px;}
+  .calc input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--red); cursor:pointer;}
+  .calc input[type=range]::-moz-range-thumb{width:20px; height:20px; border:0; border-radius:50%; background:var(--red); cursor:pointer;}
+  .calc .out{display:flex; gap:14px; margin-top:24px;}
+  .calc .stat{flex:1; background:rgba(255,255,255,.08); border-radius:14px; padding:16px;}
+  .calc .stat .sk{font-size:12px; color:rgba(255,255,255,.65); font-weight:600; text-transform:uppercase; letter-spacing:.03em;}
+  .calc .stat .sv{font-size:26px; font-weight:900; letter-spacing:-.02em; margin-top:4px;}
+  .calc .note{font-size:11.5px; color:rgba(255,255,255,.5); margin-top:14px; line-height:1.5;}
+
+  /* channels */
+  .channels{display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:44px;}
+  .channel{border:1px solid var(--line); border-radius:20px; padding:30px; background:#fff;}
+  .channel .tag{display:inline-block; font-size:12px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--red); background:var(--red-soft); padding:6px 12px; border-radius:999px;}
+  .channel h3{font-size:23px; margin-top:16px;}
+  .channel p{font-size:15px; color:var(--ink2); margin-top:12px; line-height:1.6;}
+  .channel ul{list-style:none; padding:0; margin:18px 0 0;}
+  .channel li{display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--ink2); padding:6px 0;}
+  .channel li svg{width:18px; height:18px; color:var(--red); flex:0 0 18px; margin-top:1px;}
+
+  /* marketplace */
+  .market{background:var(--soft);}
+  .vendors{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:40px;}
+  .vendor{background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:10px; transition:transform .12s, box-shadow .15s;}
+  .vendor:hover{transform:translateY(-3px); box-shadow:0 12px 28px rgba(0,0,0,.08);}
+  .vendor .vlogo{width:40px; height:40px; border-radius:11px; background:var(--red-soft); color:var(--red); display:flex; align-items:center; justify-content:center;}
+  .vendor .vlogo svg{width:20px; height:20px;}
+  .vendor .vcat{font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--red);}
+  .vendor b{font-size:15px; font-weight:800;}
+  .vendor p{font-size:12.5px; color:var(--muted); line-height:1.45; flex:1;}
+  .vendor .go{font-size:13px; font-weight:700; color:var(--ink); display:flex; align-items:center; gap:5px;}
+  .vendor .go svg{width:15px; height:15px;}
+
+  /* partner */
+  .partner{display:grid; grid-template-columns:.8fr 1.2fr; gap:48px; align-items:center;}
+  .partner .photo{width:100%; max-width:340px; border-radius:24px; aspect-ratio:1; object-fit:cover; box-shadow:0 20px 50px rgba(0,0,0,.16);}
+  .partner h2{margin-top:14px;}
+  .partner .blurb{font-size:18px; color:var(--ink2); margin-top:18px; line-height:1.6;}
+  .pcontact{display:flex; flex-wrap:wrap; gap:12px; margin-top:26px;}
+  .pcontact a{display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:15px; padding:13px 20px; border-radius:999px; border:1.5px solid var(--line2);}
+  .pcontact a:hover{border-color:var(--ink); background:var(--soft);}
+  .pcontact a.primary{background:var(--red); color:#fff; border-color:var(--red);}
+  .pcontact a.primary:hover{background:var(--red-press);}
+  .pcontact a svg{width:18px; height:18px;}
+
+  /* closing */
+  .closing{background:var(--red); color:#fff; text-align:center;}
+  .closing .wrap{padding:80px 28px;}
+  .closing h2{color:#fff; font-size:clamp(30px,3.8vw,50px);}
+  .closing p{font-size:18px; color:rgba(255,255,255,.9); margin:18px auto 0; max-width:560px;}
+  .closing .btn{margin-top:30px;}
+
+  /* footer */
+  footer{background:var(--ink); color:rgba(255,255,255,.72); font-size:14px;}
+  .footgrid{display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:30px; padding:60px 28px 30px; max-width:var(--maxw); margin:0 auto;}
+  footer h4{color:#fff; font-size:13px; text-transform:uppercase; letter-spacing:.08em; margin:0 0 16px; font-weight:800;}
+  footer a{display:block; padding:6px 0; color:rgba(255,255,255,.72);}
+  footer a:hover{color:#fff;}
+  .footbrand .brand{color:#fff; margin-bottom:14px;}
+  .footbrand p{font-size:13.5px; line-height:1.6; max-width:300px;}
+  .social{display:flex; gap:12px; margin-top:16px;}
+  .social a{width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; padding:0;}
+  .social a:hover{background:var(--red);}
+  .social svg{width:18px; height:18px; color:#fff;}
+  .legal{border-top:1px solid rgba(255,255,255,.12); padding:24px 28px; max-width:var(--maxw); margin:0 auto; font-size:12px; color:rgba(255,255,255,.5); line-height:1.7;}
+
+  @media (max-width:960px){
+    .hero-grid{grid-template-columns:1fr; gap:36px;}
+    .tools-grid{grid-template-columns:1fr;}
+    .partner{grid-template-columns:1fr; gap:28px;}
+    .partner .photo{max-width:220px;}
+    .trust .wrap{grid-template-columns:1fr 1fr; gap:28px;}
+    .stages{grid-template-columns:1fr 1fr;}
+    .vendors{grid-template-columns:1fr 1fr;}
+    .channels{grid-template-columns:1fr;}
+    .footgrid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:760px){
+    .navlinks,.navcta .signin{display:none;}
+    .burger{display:block;}
+    section.block{padding:60px 0;}
+    .toolcards{grid-template-columns:1fr;}
+  }
+  @media (max-width:520px){
+    .trust .wrap{grid-template-columns:1fr 1fr;}
+    .stages,.vendors{grid-template-columns:1fr;}
+    .footgrid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="announce">
+  <div class="wrap"><span class="dot"></span> New — Broker in a Box guides you from licensed to first funded loan, right from your phone. <a href="#journey">See how it works</a></div>
+</div>
+
+<header>
+  <div class="nav">
+    <a class="brand" href="#top"><span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15c-1 1-1 4-1 4s3 0 4-1m1-3 7-7c2-2 4-2 4-2s0 2-2 4l-7 7-2 1-3-3z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/></svg></span>Rocket Pro</a>
+    <nav class="navlinks">
+      <a href="#journey">The journey</a>
+      <a href="#tools">Tools</a>
+      <a href="#channels">Channels</a>
+      <a href="#market">Marketplace</a>
+      <a href="#partner">Your partner</a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="navcta">
+      <a class="signin" href="#partner">Sign in</a>
+      <a class="btn btn-red" href="#partner">Talk to your PDM</a>
+    </div>
+    <button class="burger" onclick="document.getElementById('mm').style.display = document.getElementById('mm').style.display==='flex'?'none':'flex'" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="#16161A" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="mobile-menu" id="mm">
+    <a href="#journey">The journey</a><a href="#tools">Tools</a><a href="#channels">Channels</a><a href="#market">Marketplace</a><a href="#partner">Your partner</a>
+    <a href="#partner" class="btn btn-red" style="margin-top:8px">Talk to your PDM</a>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Broker in a Box · by Rocket Pro</span>
+      <h1>Go independent.<br/>You won't go it alone.</h1>
+      <p class="lead">Opening your own shop is the boldest move you'll make. Broker in a Box turns it into a guided path — from your license to your first funded loan — with a Rocket Pro partner beside you the whole way.</p>
+      <div class="cta">
+        <a class="btn btn-red" href="#partner">Start your shop <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="btn btn-ghost" href="#journey">See the journey</a>
+      </div>
+      <div class="reassure"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> A real person in your corner, not a phone tree.</div>
+    </div>
+    <div class="rmcard">
+      <div class="top"><span class="eyebrow">Your build</span><span style="margin-left:auto; font-size:13px; font-weight:800; color:var(--red)">43%</span></div>
+      <div class="rmprog"><div></div></div>
+      <div class="rmstage done"><div class="rmnode">✓</div><div><b>Explore the path</b><small>Is going independent right for you?</small></div></div>
+      <div class="rmstage done"><div class="rmnode">✓</div><div><b>Get individually licensed</b><small>NMLS MU4 + SAFE exam</small></div></div>
+      <div class="rmstage done"><div class="rmnode">✓</div><div><b>Form your business</b><small>Entity, EIN, name</small></div></div>
+      <div class="rmstage now"><div class="rmnode">4</div><div><b>License your company</b><small>MU1 + surety bond, by state</small></div></div>
+      <div class="rmstage"><div class="rmnode">5</div><div><b>Set up operations</b><small>LOS, compliance, E&amp;O</small></div></div>
+      <div class="rmstage"><div class="rmnode">6</div><div><b>Get approved with Rocket Pro</b><small>Your first wholesale partner</small></div></div>
+      <div class="rmstage"><div class="rmnode">7</div><div><b>Fund your first loan</b><small>Submit, clear, close</small></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="trust">
+  <div class="wrap">
+    <div><div class="v">~40 years</div><div class="k">Navigating every kind of market, right alongside you</div></div>
+    <div><div class="v">Rocket Mortgage</div><div class="k">Backed by one of America's top lenders</div></div>
+    <div><div class="v">$100M+</div><div class="k">Invested in the tools and people that support partners</div></div>
+    <div><div class="v">50 states</div><div class="k">Licensed and ready wherever you build</div></div>
+  </div>
+</div>
+
+<a id="journey"></a>
+<section class="block">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow">The journey</span>
+      <h2>We cleared the path. You set the pace.</h2>
+      <p>Seven stages take you from "thinking about it" to your first funded loan. Every one comes with a checklist, the right tools, and a partner who's done this before.</p>
+    </div>
+    <div class="stages">
+      <div class="stage"><div class="num">01</div><h3>Explore the path</h3><p>See if going independent fits your income, pipeline, and timing — no pressure, just clarity.</p></div>
+      <div class="stage"><div class="num">02</div><h3>Get licensed</h3><p>Your NMLS account, pre-licensing hours, and the SAFE exam, mapped out step by step.</p></div>
+      <div class="stage"><div class="num">03</div><h3>Form your business</h3><p>Choose an entity, register your name, get your EIN, and open business banking.</p></div>
+      <div class="stage"><div class="num">04</div><h3>License your company</h3><p>File your MU1 and post your bond — with the exact checklist for every state you'll work.</p></div>
+      <div class="stage"><div class="num">05</div><h3>Set up operations</h3><p>Stand up your LOS, compliance, and coverage using partners ready on day one.</p></div>
+      <div class="stage"><div class="num">06</div><h3>Get approved</h3><p>Become a Rocket Pro partner — your PDM submits and tracks it, no guesswork.</p></div>
+      <div class="stage"><div class="num">07</div><h3>Fund your first loan</h3><p>Register, submit, and close your first file as an independent broker. The leap pays off.</p></div>
+      <div class="stage rocket"><div class="num">↗</div><h3>And then? You grow.</h3><p>Your shop, your name, your future — with the same team behind every loan after.</p></div>
+    </div>
+  </div>
+</section>
+
+<a id="tools"></a>
+<section class="block" style="background:var(--soft)">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow">Tools built for the climb</span>
+      <h2>Everything you need. Nothing you don't.</h2>
+      <p>The numbers, the paperwork, and the partners — in one place, so you can spend less time guessing and more time closing.</p>
+    </div>
+    <div class="tools-grid">
+      <div class="toolcards">
+        <div class="toolcard"><div class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div><h3>Comp estimator</h3><p>Model your per-loan, monthly, and annual income before you ever make the leap.</p></div>
+        <div class="toolcard"><div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/></svg></div><h3>Comp by ZIP</h3><p>See real broker comp benchmarks for your area, drawn from Rocket Pro partner data.</p></div>
+        <div class="toolcard"><div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 2h8l4 4v16H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 2v4h4M9 13h6M9 17h6" stroke="currentColor" stroke-width="1.8"/></svg></div><h3>License checklists</h3><p>Pick your channel and states, then pull the exact NMLS requirements for each.</p></div>
+        <div class="toolcard"><div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>MU1 → profile</h3><p>Upload your MU1 and we build your candidate profile — ready to sync to your PDM.</p></div>
+      </div>
+      <div class="calc">
+        <h3>See what independence could pay.</h3>
+        <p class="sub">Slide to your numbers. This is an estimate, gross of taxes and splits.</p>
+        <div class="crow"><div class="clabel"><span>Average loan amount</span><b id="v-loan">$360,000</b></div><input type="range" id="loan" min="100000" max="900000" step="10000" value="360000"></div>
+        <div class="crow"><div class="clabel"><span>Loans per month</span><b id="v-units">6</b></div><input type="range" id="units" min="1" max="30" step="1" value="6"></div>
+        <div class="crow"><div class="clabel"><span>Broker comp</span><b id="v-bps">2.00% · 200 bps</b></div><input type="range" id="bps" min="50" max="300" step="5" value="200"></div>
+        <div class="out">
+          <div class="stat"><div class="sk">Gross / month</div><div class="sv" id="o-month">$43,200</div></div>
+          <div class="stat"><div class="sk">Gross / year</div><div class="sv" id="o-year">$518,400</div></div>
+        </div>
+        <p class="note">Benchmarks come from Rocket Pro partner comp data (as of June 2026). Your PDM can pull live numbers for your market.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="channels"></a>
+<section class="block">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow">Two ways to partner</span>
+      <h2>One team behind you, whichever path you take.</h2>
+      <p>Whether you broker loans or fund them yourself, Rocket Pro meets you where you are — and helps you get licensed for it.</p>
+    </div>
+    <div class="channels">
+      <div class="channel">
+        <span class="tag">Wholesale · Broker</span>
+        <h3>Originate. We underwrite and fund.</h3>
+        <p>You bring the borrower and submit the loan; Rocket Pro underwrites and funds it. Lighter capital requirements — a broker license plus a surety bond in each state you work.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17l9-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Mortgage Broker License (by state)</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17l9-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Surety bond, often $20k+ to start</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17l9-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Lower barrier — the fastest path to independent</li>
+        </ul>
+      </div>
+      <div class="channel">
+        <span class="tag">Correspondent · Lender</span>
+        <h3>Fund in your name. Then sell to us.</h3>
+        <p>You underwrite and fund loans on a warehouse line, then sell them to Rocket Pro or other investors. More control and upside — with higher net worth, audited financials, and a warehouse line.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17l9-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Mortgage Lender / Correspondent License</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17l9-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Warehouse line + audited financials</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17l9-10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>More independence and margin per loan</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<a id="market"></a>
+<section class="block market">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow">Vendor marketplace</span>
+      <h2>Your partners, ready on day one.</h2>
+      <p>Stand up your shop faster with vendors who already offer Rocket Pro partner pricing — recruiting, origination, compliance, closing, and more.</p>
+    </div>
+    <div class="vendors" id="vendors"></div>
+  </div>
+</section>
+
+<a id="partner"></a>
+<section class="block">
+  <div class="wrap partner">
+    <img class="photo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUEBAQEAwUEBAQGBQUGCA0ICAcHCBALDAkNExAUExIQEhIUFx0ZFBYcFhISGiMaHB4fISEhFBkkJyQgJh0gISD/2wBDAQUGBggHCA8ICA8gFRIVICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICD/wAARCAFAAUADASIAAhEBAxEB/8QAHAAAAQUBAQEAAAAAAAAAAAAAAgEDBAUGAAcI/8QAPRAAAgEDAwIFAwMDAgMHBQAAAQIAAwQRBRIhMUEGEyJRYRQycQcjQlKBkRWhYrHBFjRDVHLR4SQlM2Pw/8QAGgEBAAMBAQEAAAAAAAAAAAAAAAECAwQFBv/EACIRAQEAAgICAgMBAQAAAAAAAAABAhEDIRIxBEETIlEyQv/aAAwDAQACEQMRAD8A+ThCxEEMQs4CGFnAReYHAcwsRB1hQEC5i4xFAOYWIA4yYuMQguOs7HtATHMXE4CHiAIhARcDtFAgJidiF0ncwB6ztsICF0gCFi4izoCYnYizusBMToXaIRADE7bCxOwYCY4iY7QsRMZGZIHiJ2hYndoAYnYhYnSAmJ2Is6AOIkIxIAYiGHiJiABEFhxHCILdIEYQ4IhCAsKJiKBAICFiIIogKBzFnDidg+8Bes6LjiKogKAYuIQEXGYAgRcQsTsQExFAnYEIKfYGEExO2xwI2MnvOdfLTJzj3EjcTOwlZ22LSq0K1QIr+rrFepSt6u2vkJ3YSPKJ8abInGP1KaqiuHzTfkMO3wZ3kkjLgL7fMncRZYZI2gfPMTPEPZubapBI7d4JABwSMD/MkJmdgYi7eftInAECEBxzOxCAnEYhICIhEI9YkAcRMQ8RDAHEQqe0OdAbxidzCIncYgBEMKIYAxMQsxIEUQhBEKAuYY6cwAIeIBRROxxFAgEBmLiIM5hgcwEAzDA4nYiiAv4izgDOxAUDMIDMQCOD2EmAdmTzG3uKNFtpyW9hFua60KfOCfYyBSuUqXQwlVSf6cGZ5ZL44rmnZXV4h8lTgjrnEiUaN7auadwDUo5xn2MvbGzuTQBILA/azcB5YXfk06KpX9J6H4/+JjcnROP+MqLFfrhUT0qeMyc+nvXfyGXIdMIT2eWFGjReqFWg5H8XA5klba/qUzTSgxqUz6GA4YSl5IvOPK/TN6fQFShXtGJDgEsp7n3ESiXRWo1gS38f/eT61tqIvPqhaMjnhhiPtbmvWpVzTKZHlkY7yZyRW8eX8VW4IwamvIGSe8lWlu18xZ6WxR27md9Kx1GoufSg6+0N776TcVG0AcAf85eZq3jTn0W0S0NX6hgfmUTqFchSGUSbT1KpVw9Ziye1Xr/tJ66dQvkNSg3lnHfgf3l5l2zuCgHPSKRxJlzp9zbfeA6f1J9sh98EzXe2VmgxCIRB5ETkdYVDOMUxISSIYsQwEJiZnETiOICZiGdidiAM6KQYmIEcCGFnCEIHAQsd5whAQhwEICKBCAhDgsXEIDiLtgCAYYEUYMLEBBFwYoENVzCwQOMwwAoLEgD5hhTkSNqNUUrRW25LnbIvracfZmnZf6ndbWqBQD09xNDRsLPSFSsaIqOTjjoD8ys0iqhqANTUY7d/zPWvCHhOnq94l/fUm8imM+XU6VDOPkz1HdxcfnelDo3hbxF4kZKhptZ2h68YzN9Z/pfpqU1F3WqXLKc4PSejW1rTFJKaLsQdEEnJYVGHCBQO08vLmyvp7OHx8MPcZS08K6VZ0wtvYUlUdsZnXejUPLJp0VVuxAmy+mammAsgXFt68n/EpMsmnjjPTzy70emF9dIN75Ep62i2bB826jJz06Te39IhjxwZn7mkMHtNZlVLjKwd74WoVN7UCyMw7TI6n4Yq0Arcuq//ANmetvRwvHQyJVtKdUeUy7iZ1YZ1y8nFHhF0y2tcU0xVq9iYlS61RNr11qrSHQrNF400byLwtSDU2HeY2g14Kmw3i56AP0nZjZY8zOWVqdN1NKy7XzUU9SesHUbKnk1aCnH3AfEgLpd5VRbihseovLbDxLvT6hu6L0XGKyer8GW3ZVLJWfIGT+P94OJYX9AUbuouMKTkD2PtIhE6Pcc1mqZK5PETbHcRCsgNTvzHCIm2A3ExHNsTaYDeDOxDxEKwBKjtBxiHiIRmBFAhAThiHA4LFAiiEBCKUCEBOELEIKOkWcBDAEBMQgJwEICBwAhCcAIaqfaEiQe8rtUAe4pUjwolqoCjJlbVzc35CrnbxzKZXpfCbrQ+GdPo17qmlNd/PJn0n4asfK02kijHE8h/T7RzUrowon09SBwZ9BadbpQpKgHI6meR8jP6j3vi8eu0y0tgvq7S1pinjIMhE+kBehhgbFADcntOXGSu3O/0dcriVdwR/bElXDOtIsFLfAlZuapVIIIAHSaM9KbUCGQ46zL3W4OZt7q1VwQFI4zzM3d26EFgO/SRJ2m1nHZgOmZ1NCW3Yk2pSpA43cxpKbB+OQJ0Ysrdsh41001KC3CDPvPIL6yJrsUUle+O0+m7jT6V7ZbKyAg8TxvxZ4fr6HdvcUxmgx6ideNefy49sfY0b9QBaXmwd1Y8y3snr0NVR6rk1l+7I6iMJRp6lR30CKdYcB+nMfoG7oDydSp72T7Lgfy+DNr25fTta9epErwNmZWYlxq9ILVp1B9rru56gyqm+PpzZewYiEQyMQTJqoDiJCIiYgARExHMfMQiA3iIY4RAIgAYJjnaCQTAiiEBExDUQFAhDpOAhgQiuEIZihYarCAjJhYi4hAQOHSEAcRQsLEBApjq9IgWOqvECLdOUTaOrcCQLEhdQ8tgd2eZaXdLcivjO2VGnj/72Xqd3Ey5fTfh/wBPqnwDpyWfhmgwwGqrvORzNfV1G3s6Xm3FYUkxnHcyk8NVNvhqzcAACjxIlDTLm+rVLm+qr5YbAA64ni/6y7fR49YdLl/Gml26fUVt4o/1dxHU/ULSHphrZfPVjjcZntT0PR61JwzZyMZJ9X+JirnQLLTLzdaag4Df+G3GfxNZJrpjlvfb19PFFndVFxTCqZ1a5UPuTAGeJ57pIFWvToNwPg8zcX2m1aejCtSY+nmUuU9NsZZ3UPUfElO0pspxnpk9p5R4m/UHyaz07aoNy9R2kTxf4je1apQ3HcTMJa2CateCpc5zU6KnLMf/AGm+Elc/Jb9Lqj+oN/cOc2qnA60wcf3mi0TxnVqV1FzbkK3xGKOi0dMsFVNPYZGTkjJ/ESyFpWufLVSrjohGCs0mvTLuR6jpt1RvLZqlA8exkHxNpNLUdAuKbrllUsPgxNANv9OQo21Jfsnm2VRGwdykczSRXe52+WaJq2Wrm3L8K2QekvdVzcWa3AUipTGWPZl95B8WW5t9Wq1FUF0Yr6/f4kbSdYp3qHT7oNTqqOrdCJvrpw27ukm7uDXsLfJ3FeAe/wDeV+JJqj9x1JBIbqO8aKzaenPnZb0a7zsGObZ2DJUN4ETEPETGYDZgkGObYhHMBoiCY6RAIgN4iGObRBIgRRHFEECOAQjZQIYxEAhgQhwhATgIQgII4BEUDMOBwEIRQIuOYBAiGD7QFWOKsB0AbCCMiZ7y2paotXkrv5+JohjHJwPeX3h7w+dT0DU6q2gqOtTbv7qMdZz891jt1fHxuWWp7e4eCWNx4VsyTkhMDPSaLUKFOlalqfoOO3czOfptSal4TtrarktSG0kz0SlQVqY3KGHzPGyy/bp9Fx4/pNvFxd639dWp6Xor1a5OTcXX2n/0Y7zM61pfjW71LbUoH6MJy9xwd3xjtPoirQpU3IonaT8Sju/DT6jUJub+oKWc7UPWdGGeppnnxbu2I/TvSr1aTLqdIKVPoKnIM9OvkxpdVAScLjESx0qx0umlGzQJxyTyTC1FlSyqBTkzH7bSamnzV+onh12ufqqX21ONx6AyB4N0evTuqSm9p0aZ+5qf/wCTHtz2nrOr21K9tattVQMB6piqOlW4r7qKYIOOJ1y6jkzx3kY1/wAFXd9qKXP+r06FBF2inQc7X+T8yO2h6jRNNxe0q9Kl9of7x+MTX22kJUpqGZh8AywOjUKVMHk/mR+Q/D9qfQqtyK4equzPGDN5RHmUyB1K95ktnl11wu2bPTxutVfv2M0xytUyxkfOfjDTK9fxlc2anevmb2B/iPeZuvodO1vaN5Z1mrUy+wkz2rVbHRLnxpUt61cU72s3Jzxj2mV1LR20eprdhUUFLc+dRPwZtc9WRlOH9bkxJDFju25PXEAgR4r6m985glJ1vGvumts7bHMRCIDZEErHsQSIDBWJ0jpAgkQGiBAIjpEEiA11gsIZEDECOojgEERwCFSqDD56RADCEDhDCzgvvHBARV5hgHMVcQhAQDmFiLF6wCUCFzABjoxiByz1/wDSGlSudK1S1ZQSKnmt7lek8hC56T0b9ItTFl45Szc/tX6eTj/ec/yMd4O34XJ+Pmlr2vRbena6hf21FQESqMD24mppKDkJyRMwHW38Z3lup4rU/NH/ACmjsayqCxPOZ4vjrJ9HPWj5085LsOPaQrtrSxBeq4GOcZjur65Rs7V6m7bxkn2nmFpeXvjDX/LplhYUmyz/ANXxNLETf29It9QpXCq9BM024yI1f091i7YznjI7SBc3a+HqdK3pafXvbfoDSxlfzIOseMLWjpiU6ilWbgIRyPzLzEtn0y98tSnY3rUFBrKh2t2nmtheajpurC31YgeadyFehE22reNNO0jTihofW1n5dVI9InmfijxZS1+jaG0sTaG2O4OepPtOi49OXK9vYtMelVph0IIHtH7qquRxPM/B/il3pi3rnDrx+ZrbjUwwDBphrttMuliKArVPTy00tsnkaYxc42jMotIdKlPzepMnarcFNEr01GXZcCdOEcvLdvGPF1Jm1BtepMwqNW8oL3X5HxLfX7jf4QtdSuM/UXtt9Lhu7ZzkzQaRY2d2LdbxTVak2DS/i4md/U+tQTV7TSbVRTpW1HJpr0Vppjj5ZxXl5phwPPAQRkZxjHPvFwCITKcA4xx0gAYM7XhX2ErExHMZ5iEGA1ExHCIMBphAKyQYDQGCIJEeIgEQGisbZSY8YBgRBHBAAjgEKlEcAiKI4B7QOAhCKBCwICjmEDgzgIQAzAQAkxwLgThg9oYgIEzCCYhCGMd4Ahcy10LUKmla9Y6lT9TUaoOD/iV4xOIyR8cyMpuLY3VlfUmsV6X/AGi0q9pMdta0G0n5lotZlHDA4GMifN2j+Kdbq6pYWV5eGrRT0Uy3VR7T3LTdRp4Si7+pjkZ7iePy4ar6Hg55mpfFVevfXK6ctTYrHNWT/D2qWelaeba2p4SkOTiZ7x1WqaRqH1CqTvTJI7TM6T+oFtb1V09LCpfahenZTpIOM/37xhP40uVyuq3Gt61rFdM0UdFY7cgdZh9Y8S39A0rHVrM1Eq1Nv28rxPUk0jxw2mpVbTqARiECY9WZU3nhXxZeUbm4uNMp1GtD6iR0b2mvjkrbL9vCNas0WszWlFiHOec8SCbO6ZRvotlhgYE9Wu/DfjTyqd22joFqNtpKF5J9/wASpr6P4zofUVatgmLMesMOGPxNccaxy8J6rz23e7saq1mQ9cDHaajTtbS6rrbVnw1UZpk/8pk9Z1W+uNU/0w6fTSuepToPzLnw7ot9W1a3ao22lb/uMVHT4jLGMsc7Hq2i3S2ti9SocKBzmBT1epqOnagdxG3O35EyOta0KVubS3bcSdrBZY2NVrPwrdVqo21GHC98TSSaV877Q9L8ZaVpHmqzNWuVJIX+kzH6lqFfVtTr6lcE+bcNubMy31iLq14Cu09S578y6tq/nqHCna3SbYRx8+dymhlcmDsEeK8cdomMCauQ1jHSIRDIxBMJNlYm2GeIMACsFljhMQkCAwVwYDCPtyY2wgMEYEAx0iNkQIojqj3gDrHBCpwAYiiIIQgEIQEQCGBAUcQxEAz1jm3AgcsIdZwSEE5gKIvecFhBTA4QwpzOCGPLTPvH2BSsbW4o3Cgny2DDE9SsfES3tvQuaBO9HC/2nmOzGeMg9REtr+ro1TDM301Q5/8ASZzc3Ht1cHJ4SvoHV7VdW8PVHrEllG7aZFtvBGnXXhC3vKVMW92jeYtVR66Z7ETP+HfFCahov0qZZ6npP4nqnhq5t6mnC0VkUKPUpnB3g9jjuOftUaL+pHjvTLtNM1nTbG+or6UuqQO6oO27/imgu/1O1Wja1RV8GXbpUbINErg/JkO602ktQuoUoTnDdZTXte1s8U92EJzgt0m85Nx0X4vHbvFXa1+qHitqOLXwRVoVqR+6vjaP8Ty7xB4l/UTW6tzZEW9hb1xhjRzwPdfmb3V9apsjLSqA46fMpEuLOnQe/vmyE5VD/Iy8zZ5/H4sZvTFaJ4cFrfn6qq1e5272qP1l1RuzSt7+lbrtJ4BjNvVqut1qDEq1y+5Vb+mVmpXq6fptYrUP1DHP9pGvKuHOzGdIFpSpVb+n51U1Uzud/Yy81vUwmiMKNXeFT7e8y2mpcXAqYqhQ5yAO82Gj+G3vvDuq6nduHo21IhCe7e4m11GEtrxS2etV1BwtI1DUPOe01em2tahSzXbDH+I7RdPtaGalegQwYndj3ljtIxgzok625MrZTeTjGIJMcYE9TmAeklmaOTAIMfIzAKwGiIEdIMAgwBiEQsRPiABEBhHSI2YDTCNER48RtusCKo5jgEBRHRCpQBCAiAR1VgKBxDURQsNVgKoEdwMQQuIYEBQIvScAYYTMBAMxwLFCQ1WAoEMCcqxwIYCKpJ5g1bdLig1CoMo3+0eCwwpi6pNxW6VqV5pd4bJjyDlHP8hPevCGtW/7LKQ1R/vH9M8RubRaqq2MurZUjrJfhzxJ/o+peRULLSDZQmcnLxx3/H5NV9PVlt9Qptkn09x2nm3ibQLyo1Wra1qjq3Ayekn6b4hqV6q3FOuGpVaW8Y98yPrev0rS6p03fctVvUfacnjY9iZyz2zD6ZdWtOh5tVAcbCT1ldqVr9RcUxXuB5FP0ke8ttX1mkLYpVIAJzTMw9xfn6ht5YhT/mWmNZZ5zSx1DDeWKZCUgOQvaZXVVrXdYKoOzGCY/faw30opKGLngYj9mKl5aUqIVluXON56CdWP69152Vud1Del6fd3mpJplmh2IB5rjvPYdXFHw/8ApheoQBtoEf8Aq+ZUeG9Ps9NoLUKhQgy7t1aZT9UfFK19FfT7Z+KhxgdxKXLyy6bTHxwu2K8AUWuxUt3Ppq5OT256y4r0XpV3pOpDIcEQfA1NLal9Qw2qq4l1qSUNQarcWnL0z6/meh4/q8rO7qhxxmIVzHyg6rwMciAVMrpBjZ2glI/iAwkJMFRAZeI+RAIgRysEiPkQGWAzmAeTHSsbKwGiI2RHSIBECOoHeOARteY8sKjUAQxAEcUZgKDHFzBC8R1VIEAgDCGYg5juOICKMcxxQT1nKmY6q8cwOAjiqc8QlSPKMQACc5jgWFFCkwOAhARdpEUKYA4znHGPaPf9namq6TXvrYL5tNsAHvxOp0qlR9qD1HrNz4UppQpXFEMN4OWU+0y5eo6OGbyjy/TtW1jQqyUK5fanADdPxHNW8SVbgLvHrJzjPSet614V0/WLYirRQ1CM7hxieW6t4Ga0qHyagI7dZyY2V22ZS9K241ylcimlSoSUXGD2lfd6m1asvlghehx3jVXSLhWZQGZvb3gtpN/gY9IxmaTKRSzIQubemabFg7L2PUy703VrW3YVq+CgOQgmc/0StTfc2SfePC1amOnPvKZZbaceOvbVXniq4u0NNW8un7L3mEv7xtS1VfVmlS65jl/WqU6ZReGbpKylTdBkcg9fzNODD7rLn5P+V8dWNCzS2tmIGcEiXHhjUHS8IdsqxwwPeZIUGCnHGOJcWFNqX7yn1KM/mehL9ODpvVtbHUqNR7OptrofUnaVde2qUGK1UK+x7GUmlXNxTc3SOybj0mytdQp3FEWeoUwzHo2Oka2KAjA+Y2QMZ7S+utEqqpq2R85O49pSujK21l5HVZnYGCIDKDHCDAIxIDREbZeI6Yh9oEciAw5j7ACNMIDLLGyp6x49I22cQIijiOjkRtI+o4hUSjmPBYKiOKIHdDHFBMQAEx5BA5UzHlSKqx1VzA5V4jgXiEq8R5FgAqExwU44oHaPKhPaAytP8f3jopf5+ZPoWFasMhAF7luks6Fla265bNV8Zw32iNCmpWNeuQEpNj3llb6Gmf8A6mqB8L1kxaxGeTtBxtHScWL1Nv2g+0voBVFnaW9R0p7KafzPUys/T+9udU8b6jVJItBb7E+TmVPjXVWsrAW6vudxg4lv+l6i01R7ZsFvI8xmPUkmcvP/AJ26/jz949JqGraMQw3LMvrl3UuR5dC39R74noNaglemAw9Up30nzKo2qMdjPMmT17jtidN8NV7geZWXax7+0t38JU0T1Ddmbqw0padMGoDz0ku4tgKe1V5kXOpmEeO6hoS0twVenRf+syOoaeKJYkEBec+5nrniG40rRrR7nU7lKWegzyf7Ty06k+t3NTUTQNKxVvLt1PVj7n4m3Fx5Z2Vz83JjhNRk6+nZ/cqjGTuxGDYjG1U5c/dNXdWigcHdxvA/6RKdkSMquMDd6h0E9fHCYzTxs87ldqKz0sNh39RXgyTrNClY6LVYDl8Ks09rY+XRylPO7kkym8bItOlYUOArVAc+4ltKl02gFs6Kf/rGZaU6L1G3FS5HX4E6zpU0oUzySUAyO0sOEP7dTczDBCyQVvcNbqMVyR2U9BJ1Slpep0sVVCVO7LKw0lRcVfSp5wesbVvLceUNqt3kiLqWh3NkPMTFWj/UvX+8p9nJwBj2mxtb96TFagDU++e8680axvkNa0qJQqnnb2Mi4xLFFMdRgwSvGJY3un3Vi/l3VJl7huxkIhc9evSZ2WexGK4jRElMBnpGGEhKORGmEkEGMsOYERBxHlHEZSPr0hU6vSEIghqpzxANMiPpmNopj6CA4uY8sbUYjyqTAdpnA5jozniAiEnHvJ9jRWpV31MinTGT8wDtbKpXcDGJdUtOoW3NQea4/wBodnhbRazgEtyEHYR2rVAdgykDrLaHeYWGHYYHQDtGjtwQp56QqYDHY+PfcesbekA+5GJMsD+2nlsdcYjNbNNd5O3Mdp0nbh1AUHJMpfFV81nppqFxjGAZFRGA12s+peJ6dsGL06T8mbTwpqaaX4tt6tUjyrlfp2P9PzMNptN1V7xhudjkk9TLTO9B27g+xmPJh5Y6b4Z+OW30/SXfSyGySM5Ek29plSdvHeeU+Fv1LtbayFlrYfzKYwKyfylxqP6w6Pb09unWNWvXPTf9hnk34+W9PYnyMNbr03bSpUzUZxTpqOrnE8y8Yfqnp9ij2ehYurpfS1x/Cn+J5p4j8ea/4iJp3l4aNs3At6PCj8zLnJUdct/H49518PxLO8nLzfNuU8cUi6r6n4m1pErXDVa9duahPCj8TbCztra0pWlNfLpUxggdcyq8M6cba0fUGC76nCZ7iXSMAzbwFLDBA7z0sMJPTy8s7fZu0p+e5FQAsvH9pJey/cdlqAc/b7iGtP6FxcOyYc4UD+X5lTf601LUjbWSNc3K8YA4X8y1isq2u61rplutzc1FprTHKE9Z5pq2pXfifWaRs6GLekfQSJfvpVXULg3Or3DXVUnPlZ4WXVpbU7amBRoqmP4gfbITDlBXS0SmSTUxnHaPZ9AGQrjqIYTNQlVzuGDBZFyzFSuOw7wnRncrEjmmSeCYgWm2fT0/l8RKtVFI2ock4AjeP3G53E8kGElrMFU+0HzGWmrU2IPx1/tD2GohUqqqe8ZLJQUI9QMM8QaW9tdfUB6F2FdSOjSs1Hw+woNdWeNnVkPUSNUvCSKikKG4x7SVSvKrr+3UIKy2tovTMuhB9QI+DGSJrK1naahTJDbLn3H8jM3c29W3qtTqrtI6H3lMsdJiERGm6ySwI4IwYy+RM0q5BJCARhOTJSACEHFXJjowDiAojqjmEDQZj6LG1EkokAlpx9ExFQRxesAlUgY7yeybbWhbKSpuHwSPaR6VMlh+cS0ooKut00xlKNPd/eTBaOxCKKdMIg9B9wIAp/xXcwznee8J2ZuE7mdlQhXeFbOW+ZZG3MucEgbusUHj7IRActtcOFXgDrmEoIRQ4z+JIF3RbWpvBXIwPkzy7xXdfV6lR0/zC1MHcwHYT0bVboULOqxOFVcj4nkFOo95qN1eEscvtT8SKmRaUCvlFVHpPEVi1MY6qRzCUgJt24nFlA65zxKrIu6m3V8d8AQSHLAUz04K+8k+jGNozAeqUXkADtJ6QTygi4JyD/Ff+sftLS41C9t7ZCEL8fhZDRctvJJBmv8AC9ktK3e8qKQ9U7KZ9h7yZCtBSSk1OlRprtSkmAPaKiU/KV9oDE4yYtPO3zKz+pG4I7Q3qLQoDzSqtVfAb3/E19Myohp11artqtjAx0X5/Mo70HT71r7L+RUG2sccr8mX+C5RCAmOrCRtUuaFpptU3W16AByG78StTpXUwGqJUxgn7GU9R8yfQX1EKpLY5BmN8Iag99UuLcU2FmrHFRuw9psh5m1cfaT1HYSq0hS6tTAP7eTyY1WJBOMnH+8frGnv8inTJ2DJJ/lIrOVJqAD22mNrQy+9n3DB44g+WxIxwT9x9ooptkksBkbsRxqqrSZUX1EdTAjNUGOmG7GVty/IcuAx6Y7yZUpqSHwVOM57Ssu6oWoqhgxAkghVD0dzufV29pNoD9vcpPTp3lPSrAgqcEkZEtLG53IEqHB/4eol4iptGthThNp+ZY1bW31bS8su2r/FveUz1GWpt3bs9M9ZoLF2pWo2sMHgCaa2rthri3qW9ZqFRSHpnBzIb9OZtdbs1vbVrqkuK9AZcD+QmOcLhgB6Tyfic2U1Uyqun7ySki0+JKQ54lEn1EeVeY0kfXiEH0USSgMZpx9OvEB9Fx1j9NRmNoD3khBAlW6/vKPnmWWn0v369bO1XbaGPtKyiSKy844l7QRRbKqsWA4wO5kwEpVUIUBufTnqYXlnblmGcYGekVWT7mdlHRW9olQLTqhVJYsd3PaWipKak0yFbaSeo7xaXqZgxI29xAJCIfMbcQ24Y6CONVVaDBV685kjC+ONSW20+rSBBZjgY7zIWdAUbejQK4KjJPcyX4lrC+8TUrYNmlSO9xFooz1SWPMrV4kZJchcYx3gbU53E57YnNj3xCpp7ngcwkjlKSb2HMhk+fV6HaefxOunarV2I3TtCpr5NPLn1HjEgSLW2a7u6NmmMuefxPRaVFLZKVt9qKuFK+8oPC2nArVvKqZJ9KmaOlncUC+ZT+exmkUpxBgDdgMOue8iXtobpEG7D0/Up9pYVDhCGUEFdob2M4eWKZLuDuHH4kp0jUajNZipc0TSOMkDrn4mB1y6ufFOsjS9PLfSUD+62Zd+KtTrb6el6c3m3tzwCP8Aw1jmjaVQ0rTVoIoFd/U9X+ppCdH9P0+np9ktvb0slfu9j8mWxQrTJRsUz1+TGVp4wahBPciOhUWm4DYwMgnoRIqQXFQupKHHOFPsMSBvGxCyhiT1kmq+4irjcP547SNUenTO/b6GHp/MhY7b7HqVN+OmOO0i1fMLABH2Y6w1XZaBRUAZvUR3jaBgXOW2qccyYrUa/qMtqy7ieMKB3/Mzzq1QluBxgj5lzqlZxSBKZ/p2ympnzFz055EkKietSSVwO0mWdU+cvq6nnPeML6kYjtxHrTYtdA2CSentLRC8JQBWC7ecEDvLOlUphfsOQMjMrH3IiHIfLcY7SVuNwhpqCKnSbxCxsD5l0AVJBGGB6ETKa/YHTtar2wGEJ3Jn+Qmx01glFM8FOp+ZE8Y2yVbChegZamdhPuspyY9bQ8wQCP0+sjUyZKQYnIskLJKCRU6yXT56QhJprJNNeYxTkumpgSKa4MkKOYFMYMeUcwHaVPftx3aXRK0yKbbsY42+8rLRlIVB9ynkSzCVPL3lwCTkfAl0DT1vuPbjBi1NoYAfxGDFVFYhg5btGWzSDFkLbj1EIHRp0qtMrjvzmQ9Ru6VtaV1ZvUFOC3QSdTHl4KY2nrmYnxxeeVp1ZArDf6QD/wBISxFsxr3F3e1iWesxUH4ljbqq08vwAMyNRoihTo0BzsXJPbMkPllFMgg56/EhY4GXaABnMavKzUaQRDyTHFIQ8EEASuLfU3vXoYSeoUdo86ofWZKpIalVKSpuqVDj8iCUyVyeJf8Ahq0WvfG9anuFAYX5b2iDT2tIWlrStKVIbKXX5kxB+4WI2Db0+ICMxdN9I7Sc+nriPVGzXCopKsc7j2l4oRCRUyuNp+4npK3WNRpabYVKzU0cKfSi9Xb2lpUC0Kewdudx7zLBW13WWum3NYWTYohv51Pf8QsHR9ONAnULxWa+ueXA58oe0vVV1YGoqkdEx1EKnSdCSrkEc5Pf4/E5GBqB2phiTyF/j/8AEBH2+SNzOz4xgQalRyo2qNy8EN1iViASwBVCe3URpyuFNM7nzyWkVeGGqIAXXeCOHH/tIIYVrnYGbJOVBki6dlDs9QHLf4lfp1VK1+r7eabEjPtIVqxuKamsCACqcRt1plTkkD2EdLU0bcUBJOcCQbyoRl6eVz/iTBVXoFVmOCA3EaHlrTCq3HeSkpliDkOnXIkaqKVOmWYAEcrJDNavTSj+1k5O056iP2a/vBVcl8+lviVFO4q1HJ2q2737SzsQ3mUyGIwcHMmC8Ls1N6W7GP5GTrR6QXY42nH3DvKxiS5pAEIeQG7yXQqgAbsewUdZtjVV7ZNTVgigjJznuZbajYi+0mvZj7qiftnvnMz1FmUiqpOU456zRWl2DQpVx99Ncg95pdWKvE6eJIVuJEQmSkxPPXSqYzJdLgyKhkmmeYQnU1zJtIASHSMmU4EpBJFOmD1jNMZ5kpFMJBbqVunqq3J4xLhR9u929wFlJaEm7YY5zLylTP8AUoOOc+0uiiIYNucgLniHb1afltvG3B4PYxF2shXCrg9ROUBfSGJx0HvJVHXKhd5G4Edu08t8X1zca3bWbDeobefgT0m9dvKNRyUUDAx3nkdast14nvKwJZKS7OfeQmQ6MJTzjBzO3FiM8RGLNjKgAcY94SoGYEgSFjd5W8mgGz6mkewUYL9T1gajX3OqdZKtcpQUKgyYSeBOw5HqJwJvtGtRZaNSUM1N6nqqD595jdKt2vdTpUSu5FOWPx7z0ALT8xiKhI242+xkyIOqAiMi4FTO8n3HsJIpozqWAwmOYzTBXChd2DyPePKzmmyeYVCgt/aWRIpvEN1XSjb2Nk4NzcNsX/h9z/idbUKNha0bOm+0ovA7Y75+cyBo1Q6jrV3qrqfKo5o0c9z/AFS3UEVKithlPPMLCQUyCzu39otIbFd/444M5BgeYDhf6V6CCzkAg1ht7kdIQiVm37FU4XPOYFRiF30gNp4BjDVS1cKdxHYmKwKW4XIYHlQO8irxC1Go1K3d2wQRjMr9BrrVuLioWAVVga1c1KFr6z15x7SN4VqrV0m4uW5Bqbce4kK1rWqoaS01YDuQe8ra9NatcBaZVB1+YnnmtTJ/kDgL7w6NZsgqpC4zuPv7SYIN2EpuA6Z2jopmb1K73VQc7R0CS61ItSBdgDU/pz0mVZxVcuVyf+UbFhaU888gCWy1Nq+WrdOshWrP5CqyYB43e8dripSba4wp9u8mCYlZabsCpTA6k5zLO0qFULkAt9wlFQpqWIcHJ6GWtoFKmseSOBNcaqvqNZStMbQSx5zLizri3LIAxVhjiZ+0rFmCsAG7Z7S4QM1NUVvX1yZrNIeTrJKSLTkqnOBZJQyZTkJOsmUziEJtIyfR5EraR5EsqJ4gT04kqlzIlMyXTIxCUekpW8JznJlutMK24EkkYPxK9ObjnHDSdvUowCknvLq07TdVDDg8x8Ehc8AlsD4kSmEFQqoIU9TJR5VVT17DnB6mWQqNeu2trCq/3BckfHE8q0veba4unGWr1Cw/E2/jm8RNHqlWJYnGP6ZkLWkKdpSo88JmUWg8NndnJ9oedtIvtOR1iMFAGD6hGNRqrSt0Tdy3WFkDBq3SlveXBGxRhsYErrNASGLnMn1dxKrTYFmIUboGs8KWZFtWvl4z6Vz3E1Frt9ZLnBXI47yHZW9O20+jbK2KiqASvTMlvvBeizLuboZaKn6fIZhUbLdJQeJ7x7XTxQoOwubs+VTA6/Il1V2opKlcN0+JlLHdr/iS5v6pUULBfLpA9C/vJTF5pdolhp9G0U5Cjqe5j3NNmFRCGbtFcrVpAMVPO4gdoFEA0kCVVqtu+xoSOk7YKtUx/wABHAkG7rgMfMf1f8vxJ9ao9OmQWG75mf1O4VVYMoBI+73gKWXaAGyc8g9IguEC+lwewPtIdK7oJYmq3DA4yZDFytZPQEyTmRUqzxJUY0HG7BxznvO8NOE0BwHwBVzG9WLVKFQsh9viVug1mNpXs8+tam4D3EhFbO1QVttTJwTlWHYy1uNttZjzQCcYXHb5h2NFbWyp1aiDYF3ESm1Sq7UWffwPViTBnNaucZKuS2eWlFbs1cqqp35EPUqjVqm0thVMlaYi1320l46A/MgX1jZqbfLOCFGAPaBVVqtcAswA79pZLbCjYjecPK25rMzbVbAHaSHQ1Omdqtx3Jk+0z0JwP4/MpaFMtU3MMr3lxZBaVIAscDgn2mmKKnUn/cBOSx6ATQ2lalUpDzgWC9QOomZVgl2lRamV7Ey20+sUqMpXJc/d2m0VedJx0MlI05dM1H/yb/5Ekppmo45tKg/uJwruQySnXM5NM1D/AMq/+0kpp1+Otq/+RCB0TLCiTiR6WnX+ObV/8iTqVhfAf92f/IgPowHGZLon5EYSxvgf+7uPziTaNnff+XaEI6k07sHBOW6SxbeaZATBB/yJEq2F59apNswXGRzJ9O1vFpkmg7EjoDLhbZz6go9WM8R8uC7koQ44BPaN2tndoXJouCy8dJINleop30Hbd+JZDy/x5UYija5DNUcDcJXEekc4C4HEn+LrG/OuWi07WoV8znJEbfTNSp09v0dTJOeolFohoFqViSeVlTestS/KBtw7Zl7/AKfqdK2NUWjgvx1Eqqelao9zuNq2R+ISftwABwcHpLbSLc3Gt0A+StM7mHxI9LSr4Lg2bcHjmaXwpo+oL9RdfTEOx8vk9REQ0gp7y+F9BP3R2kiM24OMD0iJRtL3yhm2ZWBxgngx9bO9VmxbHeeNo7S6rO+JtVOm6W7oCzv6EUd2PEd0WzbTNCp0n5qbc1GPUseZHq6Jc614mPn0qi2mncopIw1X5l4thfVQ3mWTDHRc/dCUJApNQl9u4Y/J+J1KpSUbqlQkhcqsc/0+78xgtu4poeuekZq2F8RtW2ZWA3buISC7u0fcjMCfc9pm6p318D9xR/V2l1X0q98rL0X3/kSuuNM1FaJ8u3fHc8SEs7q94otWo0SAc85g6ezrY0WxkbeI3q2n3opOi2dQkHg5HMk2um6iLVA9qyEDpmQK/UmzSIGfc88yp0Z2TxTZqo4qttIbvL6vpd+VYmzds9wY14b0e/TxJSuKtk5WhmpyRA2Gr360q6W1OpupsAMD39pV6uWp24dh26R+jp1/deIN9W1fyg2QMiM+I7PUHrOv0GUxgZMkYO4Pm3OXO0E9BNLpAoUaYfB3HoFlC2l6pVuVX6N+D7ibLS9EvhsLWj4xzkiQHblvSN5JVh/cSrKGqxGcKOmepmkfSrlS7NaM3YDMgPpd0KihbBi/cZ6SRBS1Y0iFyvzJlgNpqM9TCEYK/MOpp96OGtnx8HpHrPStRKszW7DPIBI5l8UU3VRmCszDOeEPXEn2dwxCIQVAPUyNUsr4E1DaVPVx1HEdtbXUEamFtqhwf5Ymu1X/2Q==" alt="Vincent Roncelli, Partner Development Manager"/>
+    <div>
+      <span class="eyebrow">Your partner</span>
+      <h2>Meet the person in your corner.</h2>
+      <p class="blurb">Going independent is a big leap — so you shouldn't take it alone. Vincent Roncelli is your Partner Development Manager: one real person who walks every stage with you, knows exactly where you are, and picks up right where you left off. No phone trees, no re-explaining.</p>
+      <div style="margin-top:8px; font-size:16px; font-weight:800;">Vincent Roncelli <span style="color:var(--muted); font-weight:600;">· Partner Development Manager, Detroit</span></div>
+      <div class="pcontact">
+        <a class="primary" href="tel:+13137519593"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3h4l2 5-2.5 1.5a12 12 0 0 0 5 5L16 11l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>(313) 751-9593</a>
+        <a href="sms:+13137519593"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 3v-3H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Text</a>
+        <a href="mailto:VincentRoncelli@RocketMortgage.com"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Email</a>
+        <a href="https://www.linkedin.com/in/vincent-roncelli-7613456b/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="wrap">
+    <h2>Every partner. Every milestone. Every time.</h2>
+    <p>Your name on the door. Your future in your hands. And a team that treats your win like ours.</p>
+    <a class="btn btn-white" href="#partner">Start your shop <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </div>
+</section>
+
+<footer>
+  <div class="footgrid">
+    <div class="footbrand">
+      <a class="brand" href="#top"><span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15c-1 1-1 4-1 4s3 0 4-1m1-3 7-7c2-2 4-2 4-2s0 2-2 4l-7 7-2 1-3-3z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/></svg></span>Rocket Pro</a>
+      <p>Broker in a Box — built to back the brokers who put their clients first, every step from licensed to funded.</p>
+      <div class="social">
+        <a href="https://www.facebook.com/RocketProTPO/" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-2 0-3 1.3-3 3v2H8v3h3v7h3v-7h2.5l.5-3H14V9.5c0-.3.2-.5.5-.5z"/></svg></a>
+        <a href="https://www.instagram.com/rocketpro/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.4" stroke="currentColor" stroke-width="1.8"/><circle cx="17" cy="7" r="1" fill="currentColor"/></svg></a>
+        <a href="https://www.youtube.com/c/rocketprotpo" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 9.5v5l4-2.5z" fill="currentColor"/></svg></a>
+        <a href="https://www.linkedin.com/showcase/rocket-pro" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 11v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>
+      </div>
+    </div>
+    <div>
+      <h4>Explore</h4>
+      <a href="#journey">The journey</a><a href="#tools">Tools</a><a href="#channels">Channels</a><a href="#market">Marketplace</a>
+    </div>
+    <div>
+      <h4>Partner</h4>
+      <a href="#partner">Talk to your PDM</a><a href="https://www.rocketpro.com/become-a-broker" target="_blank" rel="noopener">Become a broker</a><a href="https://www.rocketpro.com/partner-promises" target="_blank" rel="noopener">Partner Promises</a><a href="https://www.brokernearme.com" target="_blank" rel="noopener">Broker Near Me</a>
+    </div>
+    <div>
+      <h4>Support</h4>
+      <a href="tel:8334758776">(833) 475-8776</a><a href="tel:+13137519593">Your PDM: (313) 751-9593</a><a href="https://www.nmlsconsumeraccess.org" target="_blank" rel="noopener">NMLS Consumer Access</a>
+    </div>
+  </div>
+  <div class="legal">
+    Rocket Mortgage, LLC; NMLS #3030; NMLSConsumerAccess.org. Equal Housing Lender. Licensed in 50 states. Broker in a Box is a prototype concept for Rocket Pro partners. © 2026 Rocket Mortgage, LLC. All rights reserved. Lending services provided by Rocket Mortgage, LLC, a subsidiary of Rocket Companies, Inc. (NYSE: RKT).
+  </div>
+</footer>
+
+<script>
+  var VENDORS = [
+    {n:'Model Match',cat:'Recruiting',d:'Talent intelligence to recruit producing LOs.',u:'https://modelmatch.com/rocket?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=model_match&utm_audience=partner'},
+    {n:'Sift',cat:'Recruiting',d:'Relationship intelligence and a people directory.',u:'https://get.justsift.com/rocketpro-and-sift-partner-offer/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=sift&utm_audience=partner'},
+    {n:'Vetted VA',cat:'Recruiting',d:'Trained virtual assistants for mortgage teams.',u:'https://vettedva.com/rocket-pro-and-vetted-va/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=vetted_va&utm_audience=partner'},
+    {n:'Arive',cat:'Origination',d:'All-in-one broker LOS and point-of-sale.',u:'https://www.arive.com/rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=arive&utm_audience=partner'},
+    {n:'Shape',cat:'Origination',d:'Sales CRM and point-of-sale automation.',u:'https://setshape.com/shape-rocket-pro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=shape&utm_audience=partner'},
+    {n:'Jupiter LOS',cat:'Origination',d:'Loan origination system built for brokers.',u:'https://jupiterlos.com/'},
+    {n:'AILA',cat:'AI',d:'AI assistant for loan origination workflows.',u:'https://www.withaila.com/rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=aila&utm_audience=partner'},
+    {n:'Milo',cat:'AI',d:'AI assistant for mortgage businesses.',u:'https://www.mymilo.ai/rocket'},
+    {n:'Banking Bridge',cat:'Marketing',d:'Rate tables, lead capture, and co-marketing.',u:'http://www.bankingbridge.com/rocket-pro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=banking_bridge&utm_audience=partner'},
+    {n:'FinLocker',cat:'Borrower tools',d:'Borrower financial-readiness and nurture app.',u:'https://info.finlocker.com/keysteps-powered-by-finlocker-rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=finlocker&utm_audience=partner'},
+    {n:'Credit Builder Card',cat:'Borrower tools',d:'Help borrowers build credit toward qualifying.',u:'https://creditbuildercard.com/rocketprobroker?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=credit_builder_card&utm_audience=partner'},
+    {n:'Calque',cat:'Borrower tools',d:'Buy-before-you-sell trade-in program.',u:'https://bbys.calqueinc.com/rocketpro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=calque&utm_audience=partner'},
+    {n:'Cotality',cat:'Data',d:'Property data and analytics (formerly CoreLogic).',u:'https://ctlty.co/4phEMNj?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=cotality&utm_audience=partner'},
+    {n:'Rocket Pro University',cat:'Training',d:'Courses and certifications from Rocket Pro.',u:'https://university.rocketpro.com/learn?utm_source=storefront&utm_medium=other&utm_campaign=vendormarketplace&utm_content=rocket_pro_university&utm_audience=partner'},
+    {n:'OnCourse Learning',cat:'Training',d:'NMLS-approved pre-licensing and CE.',u:'https://partners.oncourselearning.com/mortgage/rocketprotpo?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=oncourse_learning&utm_audience=partner'},
+    {n:'Starting Now',cat:'Training',d:'Getting-started training for new brokers.',u:'https://startingnow.org/partner-rocket-pro/'},
+    {n:'Strategic Compliance Partners',cat:'Compliance',d:'Outsourced compliance management.',u:'https://strategiccompliancepartners.com/rocket-pro-members/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=strategic_compliance_partners&utm_audience=partner'},
+    {n:'Rocket Close',cat:'Title & closing',d:'Title, escrow, and closing services.',u:'https://www.rocketclose.com/broker-title-escrow?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=rocket_close&utm_audience=partner'},
+    {n:'Perfect Closing Gift',cat:'Title & closing',d:'Curated closing gifts for your clients.',u:'https://www.perfectclosinggift.com/rpm/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=perfect_closing_gift&utm_audience=partner'},
+    {n:'Change Agents',cat:'Title & closing',d:'Branded gear and closing gifts that give back.',u:'https://changeagents.com/pages/rocket-pro?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=sack_cloth_and_ashes&utm_audience=partner'},
+    {n:'Savvy',cat:'Insurance',d:'Homeowners insurance marketplace.',u:'https://savvy.insure/rocket-pro'},
+    {n:'Higginbotham',cat:'Insurance',d:'Business insurance and E&O for brokerages.',u:'https://www.higginbotham.com/business-insurance/commercial-coverage/rocket-pro-brokerage/'},
+    {n:'LoanSites',cat:'Marketing',d:'Websites and digital marketing for brokers.',u:'https://www.loansites.com/partners/rocket/?utm_medium=other&utm_source=partnervendormarketplace&utm_campaign=vendormarketplace&utm_content=loansites&utm_audience=partner'},
+    {n:'UPS',cat:'Operations',d:'Shipping discount for Rocket Pro partners.',u:'https://www.ups.com/mrd/promodiscount?loc=en_US&promoCd=DNG7BAYMF'}
+  ];
+  var arrow = '<svg viewBox="0 0 24 24" fill="none"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var box = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 9 5 4h14l1 5M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M4 9h16" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  document.getElementById('vendors').innerHTML = VENDORS.map(function(v){
+    return '<a class="vendor" href="'+v.u+'" target="_blank" rel="noopener noreferrer">'+
+      '<div class="vlogo">'+box+'</div>'+
+      '<div class="vcat">'+v.cat+'</div>'+
+      '<b>'+v.n+'</b>'+
+      '<p>'+v.d+'</p>'+
+      '<span class="go">Activate offer '+arrow+'</span></a>';
+  }).join('');
+
+  function money(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+  function calc(){
+    var loan=+document.getElementById('loan').value, units=+document.getElementById('units').value, bps=+document.getElementById('bps').value;
+    document.getElementById('v-loan').textContent = money(loan);
+    document.getElementById('v-units').textContent = units;
+    document.getElementById('v-bps').textContent = (bps/100).toFixed(2)+'% · '+bps+' bps';
+    var grossM = loan*bps/10000*units;
+    document.getElementById('o-month').textContent = money(grossM);
+    document.getElementById('o-year').textContent = money(grossM*12);
+  }
+  ['loan','units','bps'].forEach(function(id){ document.getElementById(id).addEventListener('input', calc); });
+  calc();
+</script>
+</body>
+</html>
